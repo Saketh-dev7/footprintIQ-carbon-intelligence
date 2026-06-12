@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { EmptyState } from '@/components/EmptyState';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MetricCard } from '@/components/dashboard/MetricCard';
 
 export default function DashboardPage() {
   const { data, isLoading } = useFootprint();
@@ -120,10 +121,10 @@ export default function DashboardPage() {
           <Card className="lg:col-span-2 glass border-white/5 rounded-[2.5rem] shadow-2xl overflow-hidden">
             <CardHeader className="p-8">
               <CardTitle className="font-headline text-2xl">Emissions Profile</CardTitle>
-              <CardDescription>Visual breakdown by lifestyle category (Transport, Food, Energy, Shopping, Waste)</CardDescription>
+              <CardDescription>Visual breakdown by lifestyle category</CardDescription>
             </CardHeader>
             <CardContent className="h-[400px] p-8 pt-0">
-              <div className="w-full h-full" role="img" aria-label="Bar chart showing carbon emissions breakdown. Transport, Food, Energy are typically the largest contributors.">
+              <div className="w-full h-full" role="img" aria-label="Bar chart showing carbon emissions breakdown.">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData}>
                     <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
@@ -154,7 +155,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="p-8 pt-0 space-y-6">
                 {loadingAI ? (
-                  <div className="py-8 flex flex-col items-center justify-center space-y-4">
+                  <div className="py-8 flex flex-col items-center justify-center space-y-4" aria-live="polite">
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
                     <p className="text-muted-foreground text-sm">Calculating targets...</p>
                   </div>
@@ -172,11 +173,11 @@ export default function DashboardPage() {
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Target</span>
                         <div className="text-lg font-bold">{aiInsights.monthlyReductionGoal.targetReductionKg}kg</div>
                       </div>
-                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 text-center">
                         <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Remaining</span>
                         <div className="text-lg font-bold">
                           {Math.max(0, aiInsights.monthlyReductionGoal.targetReductionKg - Math.round((aiInsights.monthlyReductionGoal.targetReductionKg * aiInsights.monthlyReductionGoal.currentProgressPercent) / 100))}kg
@@ -189,13 +190,13 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Button onClick={fetchAIInsights} variant="outline" className="rounded-xl w-full">Set Monthly Goal</Button>
+                    <Button onClick={fetchAIInsights} variant="outline" className="rounded-xl w-full">Initialize AI Advisor</Button>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="glass border-accent/20 bg-accent/5 rounded-[2.5rem] p-8">
+            <Card className="glass border-accent/20 bg-accent/5 rounded-[2.5rem] p-8 shadow-xl">
               <div className="flex items-center gap-2 text-accent mb-4">
                 <ShieldCheck className="w-5 h-5" aria-hidden="true" />
                 <span className="text-xs font-bold uppercase tracking-widest">Sustainability Rank</span>
@@ -218,7 +219,7 @@ export default function DashboardPage() {
                 <h2 className="text-3xl font-headline font-bold">30-Day Reduction Roadmap</h2>
               </div>
               <div className="text-sm text-muted-foreground font-medium bg-white/5 px-4 py-2 rounded-full border border-white/5">
-                Week-by-Week Action Strategy
+                Daily Progressive Action Plan
               </div>
             </div>
 
@@ -229,30 +230,17 @@ export default function DashboardPage() {
                     key={idx} 
                     value={`week-${idx + 1}`} 
                     className="rounded-xl font-bold uppercase tracking-widest text-[10px] md:text-xs"
-                    aria-label={`View roadmap for ${w.name}`}
+                    aria-label={`Show ${w.name}`}
                   >
                     {w.name}
                   </TabsTrigger>
                 ))}
               </TabsList>
               {weeks.map((w, idx) => (
-                <TabsContent key={idx} value={`week-${idx + 1}`} className="outline-none">
+                <TabsContent key={idx} value={`week-${idx + 1}`} className="outline-none" role="tabpanel">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4" role="list">
                     {w.days.map((day) => (
-                      <Card key={day.day} className="glass border-white/5 rounded-2xl hover:border-primary/30 transition-all overflow-hidden group" role="listitem">
-                        <div className="bg-primary/10 p-3 flex justify-between items-center border-b border-white/5 group-hover:bg-primary/20 transition-colors">
-                          <span className="font-headline font-bold text-primary text-sm">Day {day.day}</span>
-                          <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
-                            day.impact === 'high' ? 'bg-orange-500/20 text-orange-400' :
-                            day.impact === 'medium' ? 'bg-blue-500/20 text-blue-400' : 'bg-accent/20 text-accent'
-                          }`}>
-                            {day.impact} Impact
-                          </span>
-                        </div>
-                        <CardContent className="p-4 text-xs leading-relaxed min-h-[100px] flex items-center">
-                          {day.task}
-                        </CardContent>
-                      </Card>
+                      <ActionDayCard key={day.day} day={day} />
                     ))}
                   </div>
                 </TabsContent>
@@ -265,19 +253,21 @@ export default function DashboardPage() {
   );
 }
 
-function MetricCard({ label, value, sub, icon: Icon, color }: { label: string, value: string, sub: string, icon: any, color: string }) {
+function ActionDayCard({ day }: { day: any }) {
   return (
-    <Card className="glass border-white/5 rounded-[2.5rem] p-6 shadow-lg hover:translate-y-[-4px] transition-transform" aria-label={`${label}: ${value}`}>
-      <div className="flex justify-between items-start mb-4">
-        <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
-        <div className={`p-2 rounded-xl bg-white/5 ${color}`} aria-hidden="true">
-          <Icon className="w-5 h-5" />
-        </div>
+    <Card className="glass border-white/5 rounded-2xl hover:border-primary/30 transition-all overflow-hidden group" role="listitem">
+      <div className="bg-primary/10 p-3 flex justify-between items-center border-b border-white/5 group-hover:bg-primary/20 transition-colors">
+        <span className="font-headline font-bold text-primary text-sm">Day {day.day}</span>
+        <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+          day.impact === 'high' ? 'bg-orange-500/20 text-orange-400' :
+          day.impact === 'medium' ? 'bg-blue-500/20 text-blue-400' : 'bg-accent/20 text-accent'
+        }`}>
+          {day.impact} Impact
+        </span>
       </div>
-      <div className="space-y-1">
-        <div className="text-3xl font-headline font-bold">{value}</div>
-        <div className="text-xs text-muted-foreground font-medium">{sub}</div>
-      </div>
+      <CardContent className="p-4 text-xs leading-relaxed min-h-[100px] flex items-center">
+        {day.task}
+      </CardContent>
     </Card>
   );
 }

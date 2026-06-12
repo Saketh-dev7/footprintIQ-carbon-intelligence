@@ -42,6 +42,11 @@ describe('FootprintIQ Carbon Calculator Intelligence', () => {
       const emission = calculateTransportEmission(state);
       expect(emission).toBeCloseTo(62.633, 2);
     });
+
+    it('should handle extreme flight values', () => {
+      const state = { ...baseMockState, flightsPerYear: 100 };
+      expect(calculateTransportEmission(state)).toBeGreaterThan(2000);
+    });
   });
 
   describe('calculateFoodEmission', () => {
@@ -55,6 +60,12 @@ describe('FootprintIQ Carbon Calculator Intelligence', () => {
       // 1.5 * 30 = 45
       expect(calculateFoodEmission(state)).toBe(45);
     });
+
+    it('should calculate high emissions for heavy meat diet', () => {
+      const state = { ...baseMockState, dietType: 'heavy-meat' as const };
+      // 5.5 * 30 = 165
+      expect(calculateFoodEmission(state)).toBe(165);
+    });
   });
 
   describe('calculateEnergyEmission', () => {
@@ -66,6 +77,12 @@ describe('FootprintIQ Carbon Calculator Intelligence', () => {
     it('should apply renewable energy offsets', () => {
       const state = { ...baseMockState, renewableEnergy: 100 };
       expect(calculateEnergyEmission(state)).toBe(0);
+    });
+
+    it('should apply partial renewable energy offsets', () => {
+      const state = { ...baseMockState, renewableEnergy: 50 };
+      // (100 * 0.4) * 0.5 = 20
+      expect(calculateEnergyEmission(state)).toBe(20);
     });
 
     it('should apply AC surcharge when enabled', () => {
@@ -86,6 +103,20 @@ describe('FootprintIQ Carbon Calculator Intelligence', () => {
       };
       const result = calculateTotalFootprint(lowState);
       expect(result.ecoScore).toBe(100);
+    });
+
+    it('should produce a low EcoScore for high footprints', () => {
+      const highState: AssessmentState = {
+        ...baseMockState,
+        vehicleType: 'gas',
+        dailyCommute: 50,
+        flightsPerYear: 12,
+        dietType: 'heavy-meat',
+        monthlyElectricity: 1000,
+        hasAC: true
+      };
+      const result = calculateTotalFootprint(highState);
+      expect(result.ecoScore).toBeLessThan(30);
     });
   });
 });

@@ -1,12 +1,15 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { FootprintData, Badge as BadgeType } from '@/types';
+import { useFootprint } from '@/hooks/use-footprint';
+import { Badge as BadgeType } from '@/types';
 import { Trophy, ShieldCheck, Flame, Leaf, Globe, Star, ChevronRight, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const BADGES: BadgeType[] = [
   { id: '1', name: 'Green Beginner', description: 'Completed first assessment', icon: 'Leaf', unlocked: true },
@@ -16,14 +19,25 @@ const BADGES: BadgeType[] = [
 ];
 
 export default function ProgressPage() {
-  const [data, setData] = useState<FootprintData | null>(null);
+  const { data, isLoading } = useFootprint();
 
-  useEffect(() => {
-    const stored = localStorage.getItem('footprint_iq_data');
-    if (stored) setData(JSON.parse(stored));
-  }, []);
+  if (isLoading) return null;
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-center bg-background">
+        <Navigation />
+        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+          <Trophy className="w-16 h-16 text-primary mx-auto opacity-50" />
+          <h1 className="text-4xl font-headline font-bold">No Journey Data</h1>
+          <p className="text-muted-foreground max-w-sm text-lg">Start your assessment to begin earning eco-badges.</p>
+          <Button asChild size="lg" className="rounded-full h-14 px-8 text-lg">
+            <Link href="/assessment">Get Started</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -35,10 +49,9 @@ export default function ProgressPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Milestone Stats */}
           <div className="lg:col-span-2 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="glass border-white/5 rounded-3xl p-8 bg-gradient-to-br from-primary/10 to-transparent">
+              <Card className="glass border-white/5 rounded-3xl p-8 bg-gradient-to-br from-primary/10 to-transparent shadow-xl">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
                     <Flame className="w-6 h-6" />
@@ -50,7 +63,7 @@ export default function ProgressPage() {
                 </div>
                 <div className="text-5xl font-headline font-black text-primary">03</div>
               </Card>
-              <Card className="glass border-white/5 rounded-3xl p-8 bg-gradient-to-br from-accent/10 to-transparent">
+              <Card className="glass border-white/5 rounded-3xl p-8 bg-gradient-to-br from-accent/10 to-transparent shadow-xl">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent">
                     <Star className="w-6 h-6" />
@@ -64,7 +77,7 @@ export default function ProgressPage() {
               </Card>
             </div>
 
-            <Card className="glass border-white/5 rounded-[2rem]">
+            <Card className="glass border-white/5 rounded-[2rem] shadow-xl">
               <CardHeader>
                 <CardTitle className="font-headline">Achievement Progress</CardTitle>
                 <CardDescription>You are 75% away from your next milestone</CardDescription>
@@ -87,7 +100,7 @@ export default function ProgressPage() {
               </CardContent>
             </Card>
 
-            <div className="glass rounded-[2rem] border-white/5 p-12 overflow-hidden relative">
+            <div className="glass rounded-[2rem] border-white/5 p-12 overflow-hidden relative shadow-2xl">
               <div className="relative z-10">
                 <h3 className="text-3xl font-headline font-bold mb-4">Carbon History Timeline</h3>
                 <p className="text-muted-foreground mb-8">Visualization of your footprint reduction over the last year.</p>
@@ -106,11 +119,10 @@ export default function ProgressPage() {
             </div>
           </div>
 
-          {/* Badges Column */}
           <div className="space-y-6">
             <h3 className="text-xl font-headline font-bold px-4">Earned Badges</h3>
             {BADGES.map((badge) => (
-              <Card key={badge.id} className={`glass border-white/5 rounded-3xl p-6 transition-all duration-300 ${badge.unlocked ? 'opacity-100 hover:scale-105' : 'opacity-40 grayscale'}`}>
+              <Card key={badge.id} className={`glass border-white/5 rounded-3xl p-6 transition-all duration-300 shadow-lg ${badge.unlocked ? 'opacity-100 hover:scale-105' : 'opacity-40 grayscale'}`}>
                 <div className="flex items-center gap-5">
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${badge.unlocked ? 'bg-primary/20 text-primary' : 'bg-white/5 text-muted-foreground'}`}>
                     {badge.icon === 'Leaf' && <Leaf className="w-7 h-7" />}
@@ -131,7 +143,7 @@ export default function ProgressPage() {
                 </div>
               </Card>
             ))}
-            <Button variant="outline" className="w-full h-14 rounded-2xl glass border-white/10 hover:bg-white/5">
+            <Button variant="outline" className="w-full h-14 rounded-2xl glass border-white/10 hover:bg-white/5 shadow-md">
               View All 24 Achievements <ChevronRight className="ml-2 w-4 h-4" />
             </Button>
           </div>

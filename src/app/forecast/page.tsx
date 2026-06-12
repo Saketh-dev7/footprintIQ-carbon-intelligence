@@ -5,32 +5,42 @@ import { Navigation } from '@/components/Navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { FootprintData } from '@/types';
+import { useFootprint } from '@/hooks/use-footprint';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { LineChart, Leaf, ArrowDownCircle, Save, RefreshCw, Zap, TrendingDown } from 'lucide-react';
+import { Leaf, ArrowDownCircle, RefreshCw, Zap, TrendingDown, LayoutPanelLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ForecastPage() {
-  const [baseData, setBaseData] = useState<FootprintData | null>(null);
+  const { data: baseData, isLoading } = useFootprint();
   const [savings, setSavings] = useState({
     transport: 0,
     food: 0,
     energy: 0,
   });
 
-  useEffect(() => {
-    const stored = localStorage.getItem('footprint_iq_data');
-    if (stored) {
-      setBaseData(JSON.parse(stored));
-    }
-  }, []);
+  if (isLoading) return <ForecastSkeleton />;
 
-  if (!baseData) return null;
+  if (!baseData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 text-center bg-background">
+        <Navigation />
+        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+          <LayoutPanelLeft className="w-16 h-16 text-primary mx-auto opacity-50" />
+          <h1 className="text-4xl font-headline font-bold">No Baseline Data</h1>
+          <p className="text-muted-foreground max-w-sm text-lg">Complete your assessment to unlock the Impact Forecast Studio.</p>
+          <Button asChild size="lg" className="rounded-full h-14 px-8 text-lg">
+            <Link href="/assessment">Start Assessment</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const currentTotal = baseData.total;
   const projectedTotal = Math.max(0, currentTotal - (currentTotal * (savings.transport + savings.food + savings.energy) / 100));
   const reductionPercent = Math.round((currentTotal - projectedTotal) / currentTotal * 100);
   const annualSavingsKg = Math.round((currentTotal - projectedTotal) * 12);
-  const monthlyCostSavings = Math.round(annualSavingsKg * 0.15 / 12); // Mock: $0.15 saved per kg CO2e reduced
+  const monthlyCostSavings = Math.round(annualSavingsKg * 0.15 / 12); 
 
   const chartData = [
     { name: 'Current', value: currentTotal, fill: 'hsl(var(--muted))' },
@@ -47,9 +57,8 @@ export default function ForecastPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Controls */}
           <div className="lg:col-span-5 space-y-6">
-            <Card className="glass border-white/5 rounded-3xl p-8">
+            <Card className="glass border-white/5 rounded-3xl p-8 shadow-2xl">
               <div className="space-y-12">
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
@@ -60,6 +69,7 @@ export default function ForecastPage() {
                     value={[savings.energy]} 
                     onValueChange={([v]) => setSavings({...savings, energy: v})} 
                     max={30} step={5}
+                    aria-label="Clean Energy Slider"
                   />
                   <p className="text-xs text-muted-foreground">Switching to solar or wind power offsets home emissions.</p>
                 </div>
@@ -73,8 +83,9 @@ export default function ForecastPage() {
                     value={[savings.food]} 
                     onValueChange={([v]) => setSavings({...savings, food: v})} 
                     max={20} step={2}
+                    aria-label="Dietary Efficiency Slider"
                   />
-                  <p className="text-xs text-muted-foreground">Reducing meat and dairy intake significantly lowers your food footprint.</p>
+                  <p className="text-xs text-muted-foreground">Reducing meat and dairy intake significantly lowers food footprint.</p>
                 </div>
 
                 <div className="space-y-6">
@@ -86,8 +97,9 @@ export default function ForecastPage() {
                     value={[savings.transport]} 
                     onValueChange={([v]) => setSavings({...savings, transport: v})} 
                     max={40} step={5}
+                    aria-label="Transport Slider"
                   />
-                  <p className="text-xs text-muted-foreground">Walking, cycling, or using public transit reduces direct transport emissions.</p>
+                  <p className="text-xs text-muted-foreground">Walking or using public transit reduces direct emissions.</p>
                 </div>
               </div>
 
@@ -100,7 +112,6 @@ export default function ForecastPage() {
             </Card>
           </div>
 
-          {/* Results Visuals */}
           <div className="lg:col-span-7 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <SummaryBox label="Reduction" value={`${reductionPercent}%`} color="text-accent" />
@@ -108,10 +119,10 @@ export default function ForecastPage() {
               <SummaryBox label="Monthly Savings" value={`$${monthlyCostSavings}`} color="text-blue-400" />
             </div>
 
-            <Card className="glass border-white/5 rounded-[2rem] overflow-hidden">
+            <Card className="glass border-white/5 rounded-[2rem] overflow-hidden shadow-2xl">
               <CardHeader className="p-8">
                 <CardTitle className="font-headline text-2xl">Projected Monthly Emissions</CardTitle>
-                <CardDescription>Comparison between current and simulated habits (kg CO2e)</CardDescription>
+                <CardDescription>Current vs Simulated (kg CO2e)</CardDescription>
               </CardHeader>
               <CardContent className="h-[350px] p-8">
                 <ResponsiveContainer width="100%" height="100%">
@@ -132,7 +143,7 @@ export default function ForecastPage() {
               </CardContent>
             </Card>
 
-            <div className="glass p-8 rounded-[2rem] border-accent/20 bg-accent/5 flex items-center gap-6">
+            <div className="glass p-8 rounded-[2rem] border-accent/20 bg-accent/5 flex items-center gap-6 shadow-lg">
               <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0">
                 <ArrowDownCircle className="w-8 h-8" />
               </div>
@@ -161,9 +172,31 @@ function Label({ icon: Icon, label }: { icon: any, label: string }) {
 
 function SummaryBox({ label, value, color }: { label: string, value: string, color: string }) {
   return (
-    <div className="glass p-6 rounded-3xl border-white/5 text-center">
+    <div className="glass p-6 rounded-3xl border-white/5 text-center shadow-lg">
       <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-1">{label}</div>
       <div className={`text-4xl font-headline font-bold ${color}`}>{value}</div>
+    </div>
+  );
+}
+
+function ForecastSkeleton() {
+  return (
+    <div className="min-h-screen bg-background pb-32">
+      <Navigation />
+      <div className="container mx-auto px-6 py-12 space-y-8">
+        <div className="h-24 w-1/2 bg-white/5 animate-pulse rounded-2xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-5 h-[500px] bg-white/5 animate-pulse rounded-3xl" />
+          <div className="lg:col-span-7 space-y-8">
+            <div className="grid grid-cols-3 gap-6 h-32">
+              <div className="bg-white/5 animate-pulse rounded-3xl" />
+              <div className="bg-white/5 animate-pulse rounded-3xl" />
+              <div className="bg-white/5 animate-pulse rounded-3xl" />
+            </div>
+            <div className="h-[400px] bg-white/5 animate-pulse rounded-[2rem]" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

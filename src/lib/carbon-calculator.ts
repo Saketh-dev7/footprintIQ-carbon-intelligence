@@ -31,10 +31,18 @@ export const FACTORS = {
   }
 } as const;
 
+/**
+ * Utility to normalize keys from UI strings (hyphen-case) to Factor keys (UPPER_SNAKE_CASE)
+ */
+function getFactorKey(val: string): string {
+  return val.toUpperCase().replace(/-/g, '_');
+}
+
 export function calculateTransportEmission(state: AssessmentState): number {
   let dailyEmissions = 0;
   if (state.vehicleType !== 'none') {
-    const factor = FACTORS.TRANSPORT[state.vehicleType.toUpperCase() as keyof typeof FACTORS.TRANSPORT] as number;
+    const key = getFactorKey(state.vehicleType);
+    const factor = FACTORS.TRANSPORT[key as keyof typeof FACTORS.TRANSPORT] as number || 0;
     dailyEmissions = state.dailyCommute * factor;
   }
   const monthlyCommute = dailyEmissions * 22; // average work days
@@ -43,7 +51,8 @@ export function calculateTransportEmission(state: AssessmentState): number {
 }
 
 export function calculateFoodEmission(state: AssessmentState): number {
-  const factor = FACTORS.FOOD[state.dietType.toUpperCase() as keyof typeof FACTORS.FOOD] as number;
+  const key = getFactorKey(state.dietType);
+  const factor = FACTORS.FOOD[key as keyof typeof FACTORS.FOOD] as number || 3.5;
   return factor * 30; // monthly
 }
 
@@ -71,11 +80,10 @@ export function calculateWasteEmission(state: AssessmentState): number {
 /**
  * Calculates the EcoScore (0-100).
  * 100 is ideal, 0 is very high impact.
- * Average monthly footprint globally is around 400kg.
  */
 export function calculateEcoScore(totalKg: number): number {
-  const IDEAL_MONTHLY = 150; // Near net zero per capita target
-  const MAX_THRESHOLD = 800; // High impact threshold
+  const IDEAL_MONTHLY = 150; 
+  const MAX_THRESHOLD = 800; 
   
   if (totalKg <= IDEAL_MONTHLY) return 100;
   if (totalKg >= MAX_THRESHOLD) return 0;

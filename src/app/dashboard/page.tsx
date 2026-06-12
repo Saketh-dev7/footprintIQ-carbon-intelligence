@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useFootprint } from '@/hooks/use-footprint';
 import { aiSustainabilityAdvisor, AISustainabilityAdvisorOutput } from '@/ai/flows/ai-sustainability-advisor-flow';
-import { Leaf, Globe, Flame, Target, TrendingUp, Sparkles, AlertCircle, CheckCircle2, Loader2, Calendar } from 'lucide-react';
+import { Leaf, Globe, Flame, Target, TrendingUp, Sparkles, AlertCircle, CheckCircle2, Loader2, Calendar, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +22,7 @@ export default function DashboardPage() {
     if (data && !aiInsights) {
       fetchAIInsights();
     }
-  }, [data]);
+  }, [data, aiInsights]);
 
   const fetchAIInsights = async () => {
     if (!data) return;
@@ -142,8 +142,15 @@ export default function DashboardPage() {
               ) : aiInsights ? (
                 <div className="space-y-6 animate-in fade-in duration-700">
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                    <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">Largest Source</h4>
-                    <p className="text-xl font-headline font-bold text-primary">{aiInsights.largestEmissionSource}</p>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">Largest Source</h4>
+                        <p className="text-xl font-headline font-bold text-primary">{aiInsights.largestEmissionSource}</p>
+                      </div>
+                      <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                        <ArrowDown className="w-4 h-4" />
+                      </div>
+                    </div>
                   </div>
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Top Opportunities</h4>
@@ -157,9 +164,9 @@ export default function DashboardPage() {
                   <div className="p-4 rounded-2xl bg-accent/10 border border-accent/20">
                     <div className="flex items-center gap-2 mb-2 text-accent">
                       <Target className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Monthly Goal</span>
+                      <span className="text-xs font-bold uppercase tracking-wider">Estimated Impact</span>
                     </div>
-                    <p className="text-sm font-medium">{aiInsights.monthlyReductionGoal}</p>
+                    <p className="text-sm font-medium">{aiInsights.estimatedImpactPercentages}</p>
                   </div>
                 </div>
               ) : (
@@ -177,7 +184,7 @@ export default function DashboardPage() {
           <div className="space-y-6 mt-12 animate-in slide-in-from-bottom duration-700">
             <div className="flex items-center gap-3">
               <Calendar className="w-8 h-8 text-primary" />
-              <h2 className="text-3xl font-headline font-bold">30-Day Action Plan</h2>
+              <h2 className="text-3xl font-headline font-bold">30-Day Roadmap</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
               {aiInsights.actionPlan.slice(0, 10).map((day) => (
@@ -196,8 +203,9 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               ))}
-              <div className="glass border-dashed border-white/20 rounded-2xl flex items-center justify-center p-6 text-center text-muted-foreground text-sm italic">
-                View full 30-day roadmap in Action Center
+              <div className="glass border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center p-6 text-center text-muted-foreground text-sm italic group hover:border-primary/50 transition-colors">
+                <Sparkles className="w-5 h-5 mb-2 text-primary opacity-50" />
+                <span>View full 30-day plan in Action Center</span>
               </div>
             </div>
           </div>
@@ -229,9 +237,9 @@ function DashboardSkeleton() {
     <div className="min-h-screen bg-background pb-32">
       <Navigation />
       <div className="container mx-auto px-6 py-12 space-y-12">
-        <div className="flex justify-between">
+        <div className="flex flex-col md:flex-row justify-between gap-6">
           <Skeleton className="h-12 w-64 rounded-xl" />
-          <Skeleton className="h-16 w-48 rounded-3xl" />
+          <Skeleton className="h-24 w-64 rounded-3xl" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}

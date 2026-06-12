@@ -52,7 +52,7 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
 ## 🛠 Setup & Installation
 1. **Clone the Repo**:
    ```bash
-   git clone https://github.com/your-username/footprint-iq.git
+   git clone https://github.com/SAKETH-007-dev/footprintIQ-carbon-intelligence.git
    cd footprint-iq
    ```
 2. **Install Dependencies**:

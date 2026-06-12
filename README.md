@@ -1,8 +1,28 @@
 # 🌍 FootprintIQ: Carbon Intelligence Platform
+# FootprintIQ
 
+![Next.js](https://img.shields.io/badge/Next.js-15-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-06B6D4)
+![Gemini](https://img.shields.io/badge/Google-Gemini-4285F4)
+![Vitest](https://img.shields.io/badge/Tested_with-Vitest-6E9F18)
+![Status](https://img.shields.io/badge/Status-Active-success)
+![Hackathon](https://img.shields.io/badge/Hack2Skill-PromptWars-orange)
+
+AI-Powered Carbon Intelligence Platform
 **"Measure Smarter. Live Greener."**
 
 FootprintIQ is a high-fidelity Carbon Intelligence Platform that transforms lifestyle data into actionable environmental intelligence using Google Gemini-powered insights and a robust carbon calculation engine.
+## Project Highlights
+
+- AI-Powered Sustainability Advisor
+- Carbon Footprint Analysis Engine
+- Impact Forecast Studio
+- Personalized Carbon Reduction Plans
+- Progress Tracking & EcoScore
+- Google Gemini Integration
+- Accessibility Focused
+- Tested with Vitest
 
 ---
 

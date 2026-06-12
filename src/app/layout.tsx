@@ -1,4 +1,4 @@
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import { Toaster } from "@/components/ui/toaster";
 import './globals.css';
 
@@ -7,8 +7,6 @@ export const metadata: Metadata = {
   description: 'AI-powered Carbon Intelligence Platform to track and reduce your environmental impact.',
   keywords: ['carbon footprint', 'sustainability', 'green living', 'AI', 'eco-friendly'],
   authors: [{ name: 'FootprintIQ Team' }],
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
-  themeColor: '#0b1110',
   openGraph: {
     title: 'FootprintIQ | Carbon Intelligence',
     description: 'Track and reduce your environmental impact with AI-powered insights.',
@@ -16,6 +14,13 @@ export const metadata: Metadata = {
     url: 'https://footprint-iq.app',
     siteName: 'FootprintIQ',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#0b1110',
 };
 
 export default function RootLayout({

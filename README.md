@@ -30,12 +30,13 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
 ---
 
 ## 🚀 Key Features
-- ✅ **Intelligence Hub**: Visual breakdown of your carbon profile.
-- ✅ **EcoScore**: Real-time feedback on your sustainability rank.
-- ✅ **30-Day Carbon Roadmap**: AI-generated, week-by-week behavioral pathways.
-- ✅ **Monthly Goal Tracker**: Interactive progress monitoring for reduction targets.
+- ✅ **Intelligence Hub**: Visual breakdown of your carbon profile using high-fidelity Recharts.
+- ✅ **EcoScore**: Real-time feedback on your sustainability rank (0-100).
+- ✅ **30-Day Carbon Roadmap**: AI-generated, week-by-week behavioral pathways using Google Gemini.
+- ✅ **Monthly Goal Tracker**: Interactive progress monitoring for specific reduction targets.
 - ✅ **Impact Forecast Studio**: Lifestyle change simulator with annual projections.
-- ✅ **A11y Compliant**: Optimized for screen readers and keyboard navigation.
+- ✅ **Sustainability Assistant**: Conversational AI for personalized green advice.
+- ✅ **A11y Compliant**: Optimized for screen readers and keyboard navigation (WCAG standards).
 
 ---
 
@@ -43,8 +44,8 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
 - **Framework**: Next.js 15 (App Router)
 - **AI**: Firebase Genkit & Google Gemini 2.5 Flash
 - **Styling**: Tailwind CSS & Shadcn UI
-- **State**: React Hooks with persistent LocalStorage.
-- **Testing**: Vitest for core calculation logic.
+- **State**: React Hooks with persistent LocalStorage via `useFootprint`.
+- **Testing**: Vitest for core calculation logic and edge cases.
 
 ---
 
@@ -59,23 +60,32 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
    npm install
    ```
 3. **Configure Environment**:
-   - Create a `.env` file based on `.env.example`.
-   - Add your `GEMINI_API_KEY`.
+   - Rename `.env.example` to `.env`.
+   - Add your `GOOGLE_GENAI_API_KEY` from [Google AI Studio](https://aistudio.google.com/app/apikey).
 4. **Run Development**:
    ```bash
    npm run dev
    ```
 
+---
+
 ## 🔐 Security
 - **No Hardcoded Secrets**: All API keys are managed via environment variables.
-- **Input Validation**: Strict schema enforcement using Zod.
+- **Input Validation**: Strict schema enforcement using Zod on both client and server (Genkit).
+- **Hardened Git**: Comprehensive `.gitignore` to prevent leakage of artifacts or secrets.
 
 ## ♿ Accessibility
-- Full ARIA landmark support.
-- Keyboard-navigable interactive charts.
-- Color contrast optimized for high readability.
+- Full ARIA landmark support and semantic HTML.
+- Keyboard-navigable interactive charts and multi-step forms.
+- High color contrast and screen reader friendly live regions.
+- "Skip to Content" links for efficient keyboard navigation.
 
 ## 🔮 Future Improvements
 - **Global Leaderboards**: Social comparison for community-driven action.
 - **Smart Meter Integration**: Automated electricity data importing.
 - **Supply Chain Analytics**: Deep-dive product carbon footprinting for shopping.
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.

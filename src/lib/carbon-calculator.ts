@@ -2,72 +2,67 @@ import { AssessmentState, FootprintData } from '@/types';
 
 /**
  * Emission factors (approximate kg CO2e per unit)
- * Sources derived from IPCC and EPA average datasets for personal consumption.
+ * Based on environmental impact averages.
  */
 export const FACTORS = {
   TRANSPORT: {
-    GAS: 0.19, // per km
+    GAS: 0.19, 
     ELECTRIC: 0.05,
     HYBRID: 0.12,
-    FLIGHT: 250, // per average flight
+    FLIGHT: 250, 
   },
   FOOD: {
-    VEGAN: 1.5, // per day
+    VEGAN: 1.5, 
     VEGETARIAN: 2.2,
     OMNIVORE: 3.5,
     HEAVY_MEAT: 5.5,
   },
   ENERGY: {
-    ELECTRICITY: 0.4, // per kWh
-    AC_SURCHARGE: 50, // per month flat if AC used heavily
+    ELECTRICITY: 0.4, 
+    AC_SURCHARGE: 50, 
   },
   SHOPPING: {
-    ONLINE_ORDER: 2.5, // packaging + delivery
-    CLOTHING_ITEM: 15, // average production footprint
+    ONLINE_ORDER: 2.5,
+    CLOTHING_ITEM: 15,
   },
   WASTE: {
-    RECYCLING_OFFSET: -20, // offset if recycling always
-    BASE_WASTE: 30, // monthly base
+    RECYCLING_OFFSET: -20,
+    BASE_WASTE: 30,
   }
 } as const;
 
-/**
- * Utility to normalize keys from UI strings (hyphen-case) to Factor keys (UPPER_SNAKE_CASE)
- */
-function getFactorKey(val: string): string {
+function normalizeKey(val: string): string {
   return val.toUpperCase().replace(/-/g, '_');
 }
 
 export function calculateTransportEmission(state: AssessmentState): number {
-  let dailyEmissions = 0;
+  let commuteEmission = 0;
   if (state.vehicleType !== 'none') {
-    const key = getFactorKey(state.vehicleType);
-    const factor = FACTORS.TRANSPORT[key as keyof typeof FACTORS.TRANSPORT] as number || 0;
-    dailyEmissions = state.dailyCommute * factor;
+    const key = normalizeKey(state.vehicleType);
+    const factor = FACTORS.TRANSPORT[key as keyof typeof FACTORS.TRANSPORT] || 0;
+    commuteEmission = state.dailyCommute * factor * 22; // Monthly average
   }
-  const monthlyCommute = dailyEmissions * 22; // average work days
-  const monthlyFlights = (state.flightsPerYear * FACTORS.TRANSPORT.FLIGHT) / 12;
-  return monthlyCommute + monthlyFlights;
+  const flightEmission = (state.flightsPerYear * FACTORS.TRANSPORT.FLIGHT) / 12;
+  return commuteEmission + flightEmission;
 }
 
 export function calculateFoodEmission(state: AssessmentState): number {
-  const key = getFactorKey(state.dietType);
-  const factor = FACTORS.FOOD[key as keyof typeof FACTORS.FOOD] as number || 3.5;
-  return factor * 30; // monthly
+  const key = normalizeKey(state.dietType);
+  const factor = FACTORS.FOOD[key as keyof typeof FACTORS.FOOD] || 3.5;
+  return factor * 30;
 }
 
 export function calculateEnergyEmission(state: AssessmentState): number {
-  let electricityEmissions = state.monthlyElectricity * FACTORS.ENERGY.ELECTRICITY;
-  // Apply renewable offset
-  electricityEmissions = electricityEmissions * (1 - state.renewableEnergy / 100);
+  const renewableMultiplier = 1 - (state.renewableEnergy / 100);
+  const electricityEmission = (state.monthlyElectricity * FACTORS.ENERGY.ELECTRICITY) * renewableMultiplier;
   const acSurcharge = state.hasAC ? FACTORS.ENERGY.AC_SURCHARGE : 0;
-  return electricityEmissions + acSurcharge;
+  return electricityEmission + acSurcharge;
 }
 
 export function calculateShoppingEmission(state: AssessmentState): number {
-  const onlineEmissions = state.onlinePurchasesPerMonth * FACTORS.SHOPPING.ONLINE_ORDER;
-  const clothingEmissions = (state.clothingItemsPerYear * FACTORS.SHOPPING.CLOTHING_ITEM) / 12;
-  return onlineEmissions + clothingEmissions;
+  const onlineEmission = state.onlinePurchasesPerMonth * FACTORS.SHOPPING.ONLINE_ORDER;
+  const clothingEmission = (state.clothingItemsPerYear * FACTORS.SHOPPING.CLOTHING_ITEM) / 12;
+  return onlineEmission + clothingEmission;
 }
 
 export function calculateWasteEmission(state: AssessmentState): number {
@@ -77,19 +72,12 @@ export function calculateWasteEmission(state: AssessmentState): number {
   return Math.max(5, waste);
 }
 
-/**
- * Calculates the EcoScore (0-100).
- * 100 is ideal, 0 is very high impact.
- */
 export function calculateEcoScore(totalKg: number): number {
-  const IDEAL_MONTHLY = 150; 
-  const MAX_THRESHOLD = 800; 
-  
-  if (totalKg <= IDEAL_MONTHLY) return 100;
-  if (totalKg >= MAX_THRESHOLD) return 0;
-  
-  const score = 100 - ((totalKg - IDEAL_MONTHLY) / (MAX_THRESHOLD - IDEAL_MONTHLY)) * 100;
-  return Math.round(Math.min(100, Math.max(0, score)));
+  const IDEAL = 150; 
+  const POOR = 800; 
+  if (totalKg <= IDEAL) return 100;
+  if (totalKg >= POOR) return 0;
+  return Math.round(100 - ((totalKg - IDEAL) / (POOR - IDEAL)) * 100);
 }
 
 export function calculateTotalFootprint(state: AssessmentState): FootprintData {
@@ -98,9 +86,8 @@ export function calculateTotalFootprint(state: AssessmentState): FootprintData {
   const energy = calculateEnergyEmission(state);
   const shopping = calculateShoppingEmission(state);
   const waste = calculateWasteEmission(state);
-  
   const total = transport + food + energy + shopping + waste;
-  
+
   return {
     transport: Math.round(transport),
     food: Math.round(food),

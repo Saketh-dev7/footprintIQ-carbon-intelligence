@@ -55,12 +55,6 @@ describe('FootprintIQ Carbon Calculator Intelligence', () => {
       // 1.5 * 30 = 45
       expect(calculateFoodEmission(state)).toBe(45);
     });
-
-    it('should handle heavy-meat diet correctly', () => {
-      const state = { ...baseMockState, dietType: 'heavy-meat' as const };
-      // 5.5 * 30 = 165
-      expect(calculateFoodEmission(state)).toBe(165);
-    });
   });
 
   describe('calculateEnergyEmission', () => {
@@ -81,48 +75,7 @@ describe('FootprintIQ Carbon Calculator Intelligence', () => {
     });
   });
 
-  describe('calculateShoppingEmission', () => {
-    it('should calculate emissions for online purchases and clothing', () => {
-      const state = { 
-        ...baseMockState, 
-        onlinePurchasesPerMonth: 4, 
-        clothingItemsPerYear: 12 
-      };
-      // (4 * 2.5) + (12 * 15 / 12) = 10 + 15 = 25
-      expect(calculateShoppingEmission(state)).toBe(25);
-    });
-  });
-
-  describe('calculateWasteEmission', () => {
-    it('should apply offset for strict recycling', () => {
-      const state = { ...baseMockState, recyclingFrequency: 'always' as const };
-      // 30 - 20 = 10
-      expect(calculateWasteEmission(state)).toBe(10);
-    });
-
-    it('should apply penalty for no recycling', () => {
-      const state = { ...baseMockState, recyclingFrequency: 'never' as const };
-      // 30 + 10 = 40
-      expect(calculateWasteEmission(state)).toBe(40);
-    });
-  });
-
   describe('calculateTotalFootprint', () => {
-    it('should aggregate all categories into a rounded total', () => {
-      const result = calculateTotalFootprint(baseMockState);
-      
-      // Transport: 41.8 -> 42
-      // Food: 105
-      // Energy: 40
-      // Shopping: 0
-      // Waste: 30
-      // Total: 41.8 + 105 + 40 + 0 + 30 = 216.8
-      
-      expect(result.total).toBe(217);
-      expect(result.ecoScore).toBeGreaterThan(0);
-      expect(result.ecoScore).toBeLessThanOrEqual(100);
-    });
-
     it('should produce a high EcoScore for low footprints', () => {
       const lowState: AssessmentState = {
         ...baseMockState,

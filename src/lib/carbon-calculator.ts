@@ -19,22 +19,19 @@ export const FACTORS = {
     HEAVY_MEAT: 5.5,
   },
   ENERGY: {
-    ELECTRICITY: 0.4, // kg CO2e per kWh (global average)
-    AC_SURCHARGE: 50, // Flat monthly overhead for high climate control usage
+    ELECTRICITY: 0.4, // kg CO2e per kWh
+    AC_SURCHARGE: 50, // Monthly overhead for high climate control
   },
   SHOPPING: {
-    ONLINE_ORDER: 2.5, // Logistics + packaging overhead
-    CLOTHING_ITEM: 15, // Lifecycle production average
+    ONLINE_ORDER: 2.5,
+    CLOTHING_ITEM: 15,
   },
   WASTE: {
-    RECYCLING_OFFSET: -20, // Negative emission contribution for strict recycling
-    BASE_WASTE: 30, // Average monthly waste footprint
+    RECYCLING_OFFSET: -20,
+    BASE_WASTE: 30,
   }
 } as const;
 
-/**
- * Normalizes keys to match FACTOR object structure (e.g., 'heavy-meat' -> 'HEAVY_MEAT')
- */
 function normalizeKey(val: string): string {
   return val.toUpperCase().replace(/-/g, '_');
 }
@@ -44,7 +41,7 @@ export function calculateTransportEmission(state: AssessmentState): number {
   if (state.vehicleType !== 'none') {
     const key = normalizeKey(state.vehicleType);
     const factor = FACTORS.TRANSPORT[key as keyof typeof FACTORS.TRANSPORT] || 0;
-    commuteEmission = state.dailyCommute * factor * 22; // Assumes 22 working days
+    commuteEmission = state.dailyCommute * factor * 22; 
   }
   const flightEmission = (state.flightsPerYear * FACTORS.TRANSPORT.FLIGHT) / 12;
   return commuteEmission + flightEmission;
@@ -53,7 +50,7 @@ export function calculateTransportEmission(state: AssessmentState): number {
 export function calculateFoodEmission(state: AssessmentState): number {
   const key = normalizeKey(state.dietType);
   const factor = FACTORS.FOOD[key as keyof typeof FACTORS.FOOD] || 3.5;
-  return factor * 30; // 30 day average month
+  return factor * 30;
 }
 
 export function calculateEnergyEmission(state: AssessmentState): number {
@@ -73,24 +70,17 @@ export function calculateWasteEmission(state: AssessmentState): number {
   let waste = FACTORS.WASTE.BASE_WASTE;
   if (state.recyclingFrequency === 'always') waste += FACTORS.WASTE.RECYCLING_OFFSET;
   if (state.recyclingFrequency === 'never') waste += 10;
-  return Math.max(5, waste); // Floor at 5kg for baseline metabolic waste
+  return Math.max(5, waste);
 }
 
-/**
- * Calculates a relative EcoScore based on global benchmarks.
- * 100 = Ideal (Sustainable), 0 = High Impact.
- */
 export function calculateEcoScore(totalKg: number): number {
-  const IDEAL = 150; // kg CO2e / month target for personal sustainability
-  const POOR = 800; // High impact ceiling
+  const IDEAL = 150; 
+  const POOR = 800; 
   if (totalKg <= IDEAL) return 100;
   if (totalKg >= POOR) return 0;
   return Math.round(100 - ((totalKg - IDEAL) / (POOR - IDEAL)) * 100);
 }
 
-/**
- * Main entry point for generating a full footprint profile.
- */
 export function calculateTotalFootprint(state: AssessmentState): FootprintData {
   const transport = calculateTransportEmission(state);
   const food = calculateFoodEmission(state);

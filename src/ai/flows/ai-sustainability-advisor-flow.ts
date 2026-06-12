@@ -22,7 +22,12 @@ const AISustainabilityAdvisorOutputSchema = z.object({
   largestEmissionSource: z.string().describe('The category with the largest carbon emission.'),
   topImprovementOpportunities: z.array(z.string()).min(3).max(3),
   weeklySustainabilityChallenge: z.string(),
-  monthlyReductionGoal: z.string(),
+  monthlyReductionGoal: z.object({
+    title: z.string().describe('Short name for the goal.'),
+    description: z.string().describe('Detailed SMART goal.'),
+    targetReductionKg: z.number().describe('Total kg to reduce this month.'),
+    currentProgressPercent: z.number().min(0).max(100).describe('Starting progress (usually 0-10%).'),
+  }),
   estimatedImpactPercentages: z.string(),
   actionPlan: z.array(ActionPlanDaySchema).length(30).describe('A day-by-day 30-day action plan to reduce footprint.'),
 });
@@ -40,8 +45,8 @@ const aiSustainabilityAdvisorPrompt = ai.definePrompt({
   prompt: `You are the FootprintIQ AI Sustainability Advisor. 
 Based on the user's carbon data, generate:
 1. Analysis of largest sources and top 3 opportunities.
-2. A weekly challenge and monthly SMART goal.
-3. A detailed 30-day action plan with one small, actionable task per day. The tasks should be progressively more involved but always achievable for a typical household.
+2. A Monthly Goal with a specific numeric target (kg) and a starting progress percentage (usually between 0-5% based on their current habits).
+3. A detailed 30-day action plan with one small, actionable task per day. The tasks should be progressively more involved but always achievable.
 
 User's Data (kg CO2e):
 - Total: {{total}}

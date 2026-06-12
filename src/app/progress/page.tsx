@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useFootprint } from '@/hooks/use-footprint';
 import { Badge as BadgeType } from '@/types';
@@ -27,14 +26,14 @@ export default function ProgressPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 text-center bg-background">
         <Navigation />
-        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-          <Trophy className="w-16 h-16 text-primary mx-auto opacity-50" />
+        <main className="space-y-6 animate-in fade-in zoom-in duration-500" role="main">
+          <Trophy className="w-16 h-16 text-primary mx-auto opacity-50" aria-hidden="true" />
           <h1 className="text-4xl font-headline font-bold">No Journey Data</h1>
           <p className="text-muted-foreground max-w-sm text-lg">Start your assessment to begin earning eco-badges.</p>
           <Button asChild size="lg" className="rounded-full h-14 px-8 text-lg">
             <Link href="/assessment">Get Started</Link>
           </Button>
-        </div>
+        </main>
       </div>
     );
   }
@@ -42,18 +41,18 @@ export default function ProgressPage() {
   return (
     <div className="min-h-screen bg-background pb-32">
       <Navigation />
-      <div className="container mx-auto px-6 py-12">
-        <div className="mb-12">
+      <main className="container mx-auto px-6 py-12" role="main">
+        <header className="mb-12">
           <h1 className="text-4xl md:text-5xl font-headline font-bold mb-2">Sustainability Journey</h1>
           <p className="text-muted-foreground text-lg">Track your improvements and earn rewards for a cleaner planet.</p>
-        </div>
+        </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6" aria-label="Activity Highlights">
               <Card className="glass border-white/5 rounded-3xl p-8 bg-gradient-to-br from-primary/10 to-transparent shadow-xl">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary" aria-hidden="true">
                     <Flame className="w-6 h-6" />
                   </div>
                   <div>
@@ -61,11 +60,11 @@ export default function ProgressPage() {
                     <p className="text-sm text-muted-foreground">3 Days Tracking</p>
                   </div>
                 </div>
-                <div className="text-5xl font-headline font-black text-primary">03</div>
+                <div className="text-5xl font-headline font-black text-primary" aria-label="3 days streak">03</div>
               </Card>
               <Card className="glass border-white/5 rounded-3xl p-8 bg-gradient-to-br from-accent/10 to-transparent shadow-xl">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent">
+                  <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent" aria-hidden="true">
                     <Star className="w-6 h-6" />
                   </div>
                   <div>
@@ -73,38 +72,40 @@ export default function ProgressPage() {
                     <p className="text-sm text-muted-foreground">Level 2 Path</p>
                   </div>
                 </div>
-                <div className="text-5xl font-headline font-black text-accent">850</div>
+                <div className="text-5xl font-headline font-black text-accent" aria-label="850 eco points">850</div>
               </Card>
-            </div>
+            </section>
 
-            <Card className="glass border-white/5 rounded-[2rem] shadow-xl">
-              <CardHeader>
-                <CardTitle className="font-headline">Achievement Progress</CardTitle>
-                <CardDescription>You are 75% away from your next milestone</CardDescription>
-              </CardHeader>
-              <CardContent className="p-8 pt-0 space-y-8">
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                    <span>Carbon Warrior Progress</span>
-                    <span>20%</span>
+            <section aria-labelledby="achievement-progress-title">
+              <Card className="glass border-white/5 rounded-[2rem] shadow-xl">
+                <CardHeader>
+                  <CardTitle id="achievement-progress-title" className="font-headline">Achievement Progress</CardTitle>
+                  <CardDescription>You are 75% away from your next milestone</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-0 space-y-8">
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                      <span>Carbon Warrior Progress</span>
+                      <span aria-live="polite">20%</span>
+                    </div>
+                    <Progress value={20} className="h-3 bg-white/5" aria-label="Carbon Warrior milestone progress" />
                   </div>
-                  <Progress value={20} className="h-3 bg-white/5" />
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
-                    <span>Planet Protector Progress</span>
-                    <span>45%</span>
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
+                      <span>Planet Protector Progress</span>
+                      <span aria-live="polite">45%</span>
+                    </div>
+                    <Progress value={45} className="h-3 bg-white/5" aria-label="Planet Protector milestone progress" />
                   </div>
-                  <Progress value={45} className="h-3 bg-white/5" />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </section>
 
-            <div className="glass rounded-[2rem] border-white/5 p-12 overflow-hidden relative shadow-2xl">
+            <section className="glass rounded-[2rem] border-white/5 p-12 overflow-hidden relative shadow-2xl" aria-labelledby="history-title">
               <div className="relative z-10">
-                <h3 className="text-3xl font-headline font-bold mb-4">Carbon History Timeline</h3>
+                <h3 id="history-title" className="text-3xl font-headline font-bold mb-4">Carbon History Timeline</h3>
                 <p className="text-muted-foreground mb-8">Visualization of your footprint reduction over the last year.</p>
-                <div className="h-40 flex items-end gap-3 md:gap-6">
+                <div className="h-40 flex items-end gap-3 md:gap-6" role="img" aria-label="Bar chart showing a downward trend in carbon emissions over the last 12 months.">
                   {[45, 42, 38, 40, 35, 32, 30, 28, 25, 22, 24, 20].map((h, i) => (
                     <div key={i} className="flex-1 bg-primary/20 rounded-t-lg relative group transition-all" style={{ height: `${h * 4}px` }}>
                       <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 rounded-t-lg transition-opacity" />
@@ -116,39 +117,46 @@ export default function ProgressPage() {
                   <span>Dec</span>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
-          <div className="space-y-6">
-            <h3 className="text-xl font-headline font-bold px-4">Earned Badges</h3>
-            {BADGES.map((badge) => (
-              <Card key={badge.id} className={`glass border-white/5 rounded-3xl p-6 transition-all duration-300 shadow-lg ${badge.unlocked ? 'opacity-100 hover:scale-105' : 'opacity-40 grayscale'}`}>
-                <div className="flex items-center gap-5">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${badge.unlocked ? 'bg-primary/20 text-primary' : 'bg-white/5 text-muted-foreground'}`}>
-                    {badge.icon === 'Leaf' && <Leaf className="w-7 h-7" />}
-                    {badge.icon === 'Globe' && <Globe className="w-7 h-7" />}
-                    {badge.icon === 'ShieldCheck' && <ShieldCheck className="w-7 h-7" />}
-                    {badge.icon === 'Trophy' && <Trophy className="w-7 h-7" />}
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="font-bold">{badge.name}</h4>
-                    <p className="text-xs text-muted-foreground">{badge.description}</p>
-                    {badge.unlocked && <span className="text-[10px] font-bold text-accent uppercase tracking-widest">Unlocked</span>}
-                  </div>
-                  {!badge.unlocked && (
-                    <div className="ml-auto">
-                      <Zap className="w-5 h-5 text-muted-foreground/30" />
+          <aside className="space-y-6" aria-labelledby="badges-title">
+            <h3 id="badges-title" className="text-xl font-headline font-bold px-4">Earned Badges</h3>
+            <div className="space-y-4" role="list">
+              {BADGES.map((badge) => (
+                <Card 
+                  key={badge.id} 
+                  role="listitem"
+                  className={`glass border-white/5 rounded-3xl p-6 transition-all duration-300 shadow-lg ${badge.unlocked ? 'opacity-100 hover:scale-105' : 'opacity-40 grayscale'}`}
+                  aria-label={`${badge.name}: ${badge.description}. ${badge.unlocked ? 'Unlocked' : 'Locked'}`}
+                >
+                  <div className="flex items-center gap-5">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${badge.unlocked ? 'bg-primary/20 text-primary' : 'bg-white/5 text-muted-foreground'}`} aria-hidden="true">
+                      {badge.icon === 'Leaf' && <Leaf className="w-7 h-7" />}
+                      {badge.icon === 'Globe' && <Globe className="w-7 h-7" />}
+                      {badge.icon === 'ShieldCheck' && <ShieldCheck className="w-7 h-7" />}
+                      {badge.icon === 'Trophy' && <Trophy className="w-7 h-7" />}
                     </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+                    <div className="space-y-1">
+                      <h4 className="font-bold">{badge.name}</h4>
+                      <p className="text-xs text-muted-foreground">{badge.description}</p>
+                      {badge.unlocked && <span className="text-[10px] font-bold text-accent uppercase tracking-widest">Unlocked</span>}
+                    </div>
+                    {!badge.unlocked && (
+                      <div className="ml-auto" aria-hidden="true">
+                        <Zap className="w-5 h-5 text-muted-foreground/30" />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
             <Button variant="outline" className="w-full h-14 rounded-2xl glass border-white/10 hover:bg-white/5 shadow-md">
-              View All 24 Achievements <ChevronRight className="ml-2 w-4 h-4" />
+              View All 24 Achievements <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" />
             </Button>
-          </div>
+          </aside>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

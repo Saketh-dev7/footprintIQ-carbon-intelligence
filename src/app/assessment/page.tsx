@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Navigation } from '@/components/Navigation';
 import { AssessmentState, AssessmentSchema } from '@/types';
 import { calculateTotalFootprint } from '@/lib/carbon-calculator';
-import { ChevronRight, ChevronLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const steps = [
@@ -41,17 +41,7 @@ export default function AssessmentPage() {
   });
 
   const validateCurrentStep = () => {
-    try {
-      // Step-specific validation can be added here if needed
-      return true;
-    } catch (e) {
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: "Please check your inputs."
-      });
-      return false;
-    }
+    return true;
   };
 
   const handleNext = () => {
@@ -84,13 +74,20 @@ export default function AssessmentPage() {
   return (
     <div className="min-h-screen bg-background pb-32">
       <Navigation />
-      <div className="container mx-auto px-6 pt-12 max-w-2xl">
+      <main className="container mx-auto px-6 pt-12 max-w-2xl" role="main">
         <header className="mb-12" aria-label="Assessment Progress">
           <div className="flex justify-between items-center mb-4 text-sm font-bold uppercase tracking-widest text-primary">
-            <span>Step {currentStep + 1} / {steps.length}</span>
+            <span id="step-counter">Step {currentStep + 1} / {steps.length}</span>
             <span className="text-muted-foreground">{steps[currentStep].title}</span>
           </div>
-          <Progress value={progressValue} className="h-2" aria-valuenow={progressValue} />
+          <Progress 
+            value={progressValue} 
+            className="h-2" 
+            aria-labelledby="step-counter" 
+            aria-valuenow={progressValue} 
+            aria-valuemin={0} 
+            aria-valuemax={100}
+          />
         </header>
 
         <Card className="glass border-white/10 shadow-2xl rounded-[2rem] overflow-hidden">
@@ -105,17 +102,17 @@ export default function AssessmentPage() {
               {currentStep === 0 && (
                 <>
                   <div className="space-y-4">
-                    <Label className="text-lg">Vehicle Type</Label>
+                    <Label className="text-lg" id="vehicle-type-label">Vehicle Type</Label>
                     <RadioGroup 
                       value={formData.vehicleType} 
                       onValueChange={(v: any) => setFormData({ ...formData, vehicleType: v })}
                       className="grid grid-cols-2 gap-4"
-                      aria-label="Select vehicle type"
+                      aria-labelledby="vehicle-type-label"
                     >
                       {['gas', 'electric', 'hybrid', 'none'].map((type) => (
                         <div key={type} className="flex items-center space-x-3 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                          <RadioGroupItem value={type} id={type} />
-                          <Label htmlFor={type} className="capitalize cursor-pointer">{type}</Label>
+                          <RadioGroupItem value={type} id={`type-${type}`} />
+                          <Label htmlFor={`type-${type}`} className="capitalize cursor-pointer flex-1">{type}</Label>
                         </div>
                       ))}
                     </RadioGroup>
@@ -129,6 +126,7 @@ export default function AssessmentPage() {
                       value={formData.dailyCommute} 
                       onChange={(e) => setFormData({...formData, dailyCommute: Number(e.target.value)})}
                       className="h-12 bg-white/5 border-white/10"
+                      required
                     />
                   </div>
                   <div className="space-y-4">
@@ -140,6 +138,7 @@ export default function AssessmentPage() {
                       value={formData.flightsPerYear} 
                       onChange={(e) => setFormData({...formData, flightsPerYear: Number(e.target.value)})}
                       className="h-12 bg-white/5 border-white/10"
+                      required
                     />
                   </div>
                 </>
@@ -147,11 +146,12 @@ export default function AssessmentPage() {
 
               {currentStep === 1 && (
                 <div className="space-y-4">
-                  <Label className="text-lg">Dietary Habits</Label>
+                  <Label className="text-lg" id="diet-label">Dietary Habits</Label>
                   <RadioGroup 
                     value={formData.dietType} 
                     onValueChange={(v: any) => setFormData({ ...formData, dietType: v })}
                     className="grid grid-cols-1 gap-4"
+                    aria-labelledby="diet-label"
                   >
                     {[
                       { id: 'vegan', label: 'Vegan', desc: 'No animal products' },
@@ -160,9 +160,9 @@ export default function AssessmentPage() {
                       { id: 'heavy-meat', label: 'Meat-Heavy', desc: 'Meat consumed most meals' },
                     ].map((diet) => (
                       <div key={diet.id} className="flex items-center space-x-3 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                        <RadioGroupItem value={diet.id} id={diet.id} />
-                        <div className="flex flex-col cursor-pointer">
-                          <Label htmlFor={diet.id} className="font-bold">{diet.label}</Label>
+                        <RadioGroupItem value={diet.id} id={`diet-${diet.id}`} />
+                        <div className="flex flex-col cursor-pointer flex-1">
+                          <Label htmlFor={`diet-${diet.id}`} className="font-bold">{diet.label}</Label>
                           <span className="text-sm text-muted-foreground">{diet.desc}</span>
                         </div>
                       </div>
@@ -182,19 +182,25 @@ export default function AssessmentPage() {
                       value={formData.monthlyElectricity} 
                       onChange={(e) => setFormData({...formData, monthlyElectricity: Number(e.target.value)})}
                       className="h-12 bg-white/5 border-white/10"
+                      required
                     />
                   </div>
                   <div className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-white/5">
                     <div className="space-y-1">
-                      <Label className="text-lg">High AC / Heating Usage</Label>
+                      <Label htmlFor="has-ac" className="text-lg">High AC / Heating Usage</Label>
                       <p className="text-sm text-muted-foreground">Do you regulate temperature daily?</p>
                     </div>
-                    <Switch checked={formData.hasAC} onCheckedChange={(v) => setFormData({...formData, hasAC: v})} />
+                    <Switch 
+                      id="has-ac"
+                      checked={formData.hasAC} 
+                      onCheckedChange={(v) => setFormData({...formData, hasAC: v})} 
+                      aria-label="Toggle AC usage"
+                    />
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <Label htmlFor="renewable" className="text-lg">Renewable Energy Share</Label>
-                      <span className="text-primary font-bold">{formData.renewableEnergy}%</span>
+                      <span className="text-primary font-bold" aria-live="polite">{formData.renewableEnergy}%</span>
                     </div>
                     <Input 
                       id="renewable" 
@@ -218,6 +224,7 @@ export default function AssessmentPage() {
                       value={formData.onlinePurchasesPerMonth} 
                       onChange={(e) => setFormData({...formData, onlinePurchasesPerMonth: Number(e.target.value)})}
                       className="h-12 bg-white/5 border-white/10"
+                      required
                     />
                   </div>
                   <div className="space-y-4">
@@ -229,6 +236,7 @@ export default function AssessmentPage() {
                       value={formData.clothingItemsPerYear} 
                       onChange={(e) => setFormData({...formData, clothingItemsPerYear: Number(e.target.value)})}
                       className="h-12 bg-white/5 border-white/10"
+                      required
                     />
                   </div>
                 </>
@@ -236,11 +244,12 @@ export default function AssessmentPage() {
 
               {currentStep === 4 && (
                 <div className="space-y-4">
-                  <Label className="text-lg">Recycling Consistency</Label>
+                  <Label className="text-lg" id="recycling-label">Recycling Consistency</Label>
                   <RadioGroup 
                     value={formData.recyclingFrequency} 
                     onValueChange={(v: any) => setFormData({ ...formData, recyclingFrequency: v })}
                     className="grid grid-cols-1 gap-4"
+                    aria-labelledby="recycling-label"
                   >
                     {[
                       { id: 'always', label: 'Strict Recycling', desc: 'Separating all recyclables' },
@@ -248,9 +257,9 @@ export default function AssessmentPage() {
                       { id: 'never', label: 'None', desc: 'All materials to general waste' },
                     ].map((freq) => (
                       <div key={freq.id} className="flex items-center space-x-3 p-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                        <RadioGroupItem value={freq.id} id={freq.id} />
-                        <div className="flex flex-col cursor-pointer">
-                          <Label htmlFor={freq.id} className="font-bold">{freq.label}</Label>
+                        <RadioGroupItem value={freq.id} id={`freq-${freq.id}`} />
+                        <div className="flex flex-col cursor-pointer flex-1">
+                          <Label htmlFor={`freq-${freq.id}`} className="font-bold">{freq.label}</Label>
                           <span className="text-sm text-muted-foreground">{freq.desc}</span>
                         </div>
                       </div>
@@ -268,7 +277,7 @@ export default function AssessmentPage() {
                 className="flex-1 h-12 rounded-xl"
                 aria-label="Previous step"
               >
-                <ChevronLeft className="mr-2 w-4 h-4" /> Back
+                <ChevronLeft className="mr-2 w-4 h-4" aria-hidden="true" /> Back
               </Button>
               <Button 
                 onClick={handleNext} 
@@ -276,12 +285,12 @@ export default function AssessmentPage() {
                 aria-label={currentStep === steps.length - 1 ? 'Calculate result' : 'Next step'}
               >
                 {currentStep === steps.length - 1 ? 'Calculate Footprint' : 'Next Step'} 
-                {currentStep === steps.length - 1 ? <CheckCircle2 className="ml-2 w-4 h-4" /> : <ChevronRight className="ml-2 w-4 h-4" />}
+                {currentStep === steps.length - 1 ? <CheckCircle2 className="ml-2 w-4 h-4" aria-hidden="true" /> : <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" />}
               </Button>
             </nav>
           </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   );
 }

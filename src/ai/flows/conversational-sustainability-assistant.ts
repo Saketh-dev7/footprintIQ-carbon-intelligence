@@ -34,7 +34,9 @@ export async function chatWithSustainabilityAssistant(
 const sustainabilityAssistantPrompt = ai.definePrompt({
   name: 'sustainabilityAssistantPrompt',
   input: {schema: ConversationalSustainabilityAssistantInputSchema},
-  output: {schema: ConversationalSustainabilityAssistantOutputSchema},
+  output: {
+  schema: z.string().optional(),
+},
   prompt: `You are the FootprintIQ Sustainability Assistant, an expert in carbon reduction, environmental impact, and green living. Your goal is to provide immediate, personalized, and actionable advice to users based on their questions.\n\nWhen a user asks a question, analyze it thoroughly and provide a comprehensive, helpful, and encouraging response. Focus on practical tips, explain concepts clearly, and suggest green alternatives where appropriate. Always maintain a positive and supportive tone.\n\nUser's Question: {{{it}}}`,
 });
 

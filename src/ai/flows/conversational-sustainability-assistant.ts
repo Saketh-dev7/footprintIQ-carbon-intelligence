@@ -45,7 +45,18 @@ const conversationalSustainabilityAssistantFlow = ai.defineFlow(
     outputSchema: ConversationalSustainabilityAssistantOutputSchema,
   },
   async input => {
-    const {output} = await sustainabilityAssistantPrompt(input);
-    return output!;
+  try {
+    const { output } = await sustainabilityAssistantPrompt(input);
+
+    if (!output || typeof output !== "string") {
+      return "I'm sorry, I couldn't generate a response right now. Please try again.";
+    }
+
+    return output;
+  } catch (error) {
+    console.error("Assistant Flow Error:", error);
+
+    return "I'm currently experiencing high demand. Please try again in a moment.";
   }
+        }
 );

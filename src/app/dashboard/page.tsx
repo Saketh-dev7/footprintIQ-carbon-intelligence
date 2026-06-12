@@ -3,55 +3,64 @@
 import { useEffect, useState } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { FootprintData } from '@/types';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useFootprint } from '@/hooks/use-footprint';
 import { aiSustainabilityAdvisor, AISustainabilityAdvisorOutput } from '@/ai/flows/ai-sustainability-advisor-flow';
-import { Leaf, Info, Flame, Lightbulb, Target, TrendingUp, Sparkles, AlertCircle } from 'lucide-react';
+import { Leaf, Globe, Flame, Target, TrendingUp, Sparkles, AlertCircle, CheckCircle2, Loader2, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const [data, setData] = useState<FootprintData | null>(null);
+  const { data, isLoading } = useFootprint();
+  const { toast } = useToast();
   const [aiInsights, setAiInsights] = useState<AISustainabilityAdvisorOutput | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('footprint_iq_data');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setData(parsed);
-      fetchAIInsights(parsed);
+    if (data && !aiInsights) {
+      fetchAIInsights();
     }
-  }, []);
+  }, [data]);
 
-  const fetchAIInsights = async (footprint: FootprintData) => {
+  const fetchAIInsights = async () => {
+    if (!data) return;
     setLoadingAI(true);
     try {
       const result = await aiSustainabilityAdvisor({
-        total: footprint.total,
-        transport: footprint.transport,
-        food: footprint.food,
-        energy: footprint.energy,
-        shopping: footprint.shopping,
-        waste: footprint.waste,
+        total: data.total,
+        transport: data.transport,
+        food: data.food,
+        energy: data.energy,
+        shopping: data.shopping,
+        waste: data.waste,
       });
       setAiInsights(result);
     } catch (error) {
-      console.error('Failed to fetch AI insights', error);
+      toast({
+        variant: "destructive",
+        title: "AI Analysis Failed",
+        description: "We couldn't generate personalized insights right now. Please try again."
+      });
     } finally {
       setLoadingAI(false);
     }
   };
 
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
+
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+      <div className="min-h-screen flex items-center justify-center p-6 text-center bg-background">
         <Navigation />
-        <div className="space-y-6">
+        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
           <Leaf className="w-16 h-16 text-primary mx-auto animate-bounce" />
-          <h1 className="text-3xl font-headline font-bold">No Data Found</h1>
-          <p className="text-muted-foreground max-w-sm">Start your assessment to see your personalized carbon dashboard.</p>
-          <Button asChild size="lg" className="rounded-full">
+          <h1 className="text-4xl font-headline font-bold">No Data Found</h1>
+          <p className="text-muted-foreground max-w-sm text-lg">Start your assessment to see your personalized carbon dashboard.</p>
+          <Button asChild size="lg" className="rounded-full h-14 px-8 text-lg">
             <Link href="/assessment">Start Assessment</Link>
           </Button>
         </div>
@@ -67,8 +76,6 @@ export default function DashboardPage() {
     { name: 'Waste', value: data.waste, color: 'hsl(var(--chart-5))' },
   ];
 
-  const ecoScore = Math.max(0, 100 - Math.round(data.total / 10));
-
   return (
     <div className="min-h-screen bg-background pb-32">
       <Navigation />
@@ -78,10 +85,10 @@ export default function DashboardPage() {
             <h1 className="text-4xl md:text-5xl font-headline font-bold">Intelligence Hub</h1>
             <p className="text-muted-foreground text-lg">Real-time analysis of your environmental impact.</p>
           </div>
-          <div className="glass p-6 rounded-3xl flex items-center gap-6 border-white/5">
+          <div className="glass p-6 rounded-3xl flex items-center gap-6 border-white/5 shadow-xl">
             <div className="space-y-1">
               <span className="text-sm text-muted-foreground uppercase tracking-widest font-bold">EcoScore</span>
-              <div className="text-4xl font-headline font-bold text-accent">{ecoScore} / 100</div>
+              <div className="text-4xl font-headline font-bold text-accent">{data.ecoScore} / 100</div>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-accent/20 flex items-center justify-center text-accent">
               <Sparkles className="w-6 h-6" />
@@ -89,56 +96,26 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Top Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <MetricCard 
-            label="Total Footprint" 
-            value={`${data.total} kg`} 
-            sub="CO2e / Month" 
-            icon={Globe}
-            color="text-primary"
-          />
-          <MetricCard 
-            label="Daily Average" 
-            value={`${Math.round(data.total / 30)} kg`} 
-            sub="CO2e / Day" 
-            icon={TrendingUp}
-            color="text-blue-400"
-          />
-          <MetricCard 
-            label="Current Status" 
-            value={data.total > 400 ? 'High' : 'Moderate'} 
-            sub="Impact Level" 
-            icon={AlertCircle}
-            color={data.total > 400 ? 'text-destructive' : 'text-accent'}
-          />
-          <MetricCard 
-            label="Annual Estimate" 
-            value={`${(data.total * 12 / 1000).toFixed(1)} t`} 
-            sub="Metric Tons CO2e" 
-            icon={Flame}
-            color="text-orange-400"
-          />
+          <MetricCard label="Total Footprint" value={`${data.total} kg`} sub="CO2e / Month" icon={Globe} color="text-primary" />
+          <MetricCard label="Daily Average" value={`${Math.round(data.total / 30)} kg`} sub="CO2e / Day" icon={TrendingUp} color="text-blue-400" />
+          <MetricCard label="Eco Status" value={data.ecoScore > 70 ? 'Greener' : 'Improving'} sub="Based on score" icon={AlertCircle} color={data.ecoScore > 70 ? 'text-accent' : 'text-orange-400'} />
+          <MetricCard label="Annual Estimate" value={`${(data.total * 12 / 1000).toFixed(1)} t`} sub="Metric Tons CO2e" icon={Flame} color="text-orange-400" />
         </div>
 
-        {/* Charts & Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Chart */}
-          <Card className="lg:col-span-2 glass border-white/5 rounded-[2rem]">
-            <CardHeader>
-              <CardTitle className="font-headline">Emission Breakdown</CardTitle>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <Card className="lg:col-span-2 glass border-white/5 rounded-[2rem] shadow-2xl overflow-hidden">
+            <CardHeader className="p-8">
+              <CardTitle className="font-headline text-2xl">Emission Breakdown</CardTitle>
               <CardDescription>Monthly distribution across categories</CardDescription>
             </CardHeader>
-            <CardContent className="h-[400px]">
+            <CardContent className="h-[400px] p-8 pt-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>
                   <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${value}kg`} />
-                  <Tooltip 
-                    contentStyle={{ background: 'rgba(11, 17, 16, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                    itemStyle={{ color: '#fff' }}
-                  />
-                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                  <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => `${v}kg`} />
+                  <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} contentStyle={{ background: 'rgba(11, 17, 16, 0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px' }} />
+                  <Bar dataKey="value" radius={[12, 12, 0, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
@@ -148,29 +125,28 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* AI Advisor Panel */}
-          <Card className="glass border-primary/20 bg-primary/5 rounded-[2rem] overflow-hidden relative">
-            <CardHeader>
+          <Card className="glass border-primary/20 bg-primary/5 rounded-[2rem] overflow-hidden flex flex-col">
+            <CardHeader className="p-8">
               <div className="flex items-center gap-2 text-primary mb-2">
                 <Sparkles className="w-5 h-5" />
-                <span className="text-xs font-bold uppercase tracking-widest">AI Sustainability Advisor</span>
+                <span className="text-xs font-bold uppercase tracking-widest">AI Advisor</span>
               </div>
-              <CardTitle className="font-headline">Personalized Insights</CardTitle>
+              <CardTitle className="font-headline text-2xl">Personalized Insights</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="p-8 pt-0 space-y-6 flex-1">
               {loadingAI ? (
-                <div className="py-12 flex flex-col items-center justify-center space-y-4">
-                  <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-                  <p className="text-muted-foreground animate-pulse">Analyzing footprint patterns...</p>
+                <div className="py-12 flex flex-col items-center justify-center space-y-4 h-full">
+                  <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                  <p className="text-muted-foreground animate-pulse text-sm">Analyzing footprint patterns...</p>
                 </div>
               ) : aiInsights ? (
-                <div className="space-y-6 animate-fade-in">
+                <div className="space-y-6 animate-in fade-in duration-700">
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/5">
-                    <h4 className="text-sm font-bold text-muted-foreground mb-1 uppercase tracking-wider">Largest Source</h4>
+                    <h4 className="text-xs font-bold text-muted-foreground mb-1 uppercase tracking-wider">Largest Source</h4>
                     <p className="text-xl font-headline font-bold text-primary">{aiInsights.largestEmissionSource}</p>
                   </div>
                   <div className="space-y-3">
-                    <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Top Opportunities</h4>
+                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Top Opportunities</h4>
                     {aiInsights.topImprovementOpportunities.map((opt, i) => (
                       <div key={i} className="flex gap-3 text-sm leading-relaxed">
                         <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
@@ -181,27 +157,51 @@ export default function DashboardPage() {
                   <div className="p-4 rounded-2xl bg-accent/10 border border-accent/20">
                     <div className="flex items-center gap-2 mb-2 text-accent">
                       <Target className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Weekly Challenge</span>
+                      <span className="text-xs font-bold uppercase tracking-wider">Monthly Goal</span>
                     </div>
-                    <p className="text-sm font-medium">{aiInsights.weeklySustainabilityChallenge}</p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                    <div className="flex items-center gap-2 mb-2 text-blue-400">
-                      <TrendingUp className="w-4 h-4" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Estimated Impact</span>
-                    </div>
-                    <p className="text-sm font-medium">{aiInsights.estimatedImpactPercentages}</p>
+                    <p className="text-sm font-medium">{aiInsights.monthlyReductionGoal}</p>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground mb-4">No insights generated yet.</p>
-                  <Button onClick={() => fetchAIInsights(data)}>Retry Analysis</Button>
+                  <Button onClick={fetchAIInsights} variant="outline" className="rounded-xl">Analyze Now</Button>
                 </div>
               )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Action Plan Section */}
+        {aiInsights?.actionPlan && (
+          <div className="space-y-6 mt-12 animate-in slide-in-from-bottom duration-700">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-8 h-8 text-primary" />
+              <h2 className="text-3xl font-headline font-bold">30-Day Action Plan</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              {aiInsights.actionPlan.slice(0, 10).map((day) => (
+                <Card key={day.day} className="glass border-white/5 rounded-2xl hover:border-primary/30 transition-all group overflow-hidden">
+                  <div className="bg-primary/10 p-3 flex justify-between items-center border-b border-white/5">
+                    <span className="font-headline font-bold text-primary">Day {day.day}</span>
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                      day.impact === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                      day.impact === 'medium' ? 'bg-blue-500/20 text-blue-400' : 'bg-accent/20 text-accent'
+                    }`}>
+                      {day.impact}
+                    </span>
+                  </div>
+                  <CardContent className="p-4 text-sm leading-relaxed min-h-[80px]">
+                    {day.task}
+                  </CardContent>
+                </Card>
+              ))}
+              <div className="glass border-dashed border-white/20 rounded-2xl flex items-center justify-center p-6 text-center text-muted-foreground text-sm italic">
+                View full 30-day roadmap in Action Center
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -209,7 +209,7 @@ export default function DashboardPage() {
 
 function MetricCard({ label, value, sub, icon: Icon, color }: { label: string, value: string, sub: string, icon: any, color: string }) {
   return (
-    <Card className="glass border-white/5 rounded-3xl p-6">
+    <Card className="glass border-white/5 rounded-3xl p-6 shadow-lg hover:translate-y-[-4px] transition-transform">
       <div className="flex justify-between items-start mb-4">
         <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
         <div className={`p-2 rounded-xl bg-white/5 ${color}`}>
@@ -218,28 +218,29 @@ function MetricCard({ label, value, sub, icon: Icon, color }: { label: string, v
       </div>
       <div className="space-y-1">
         <div className="text-3xl font-headline font-bold">{value}</div>
-        <div className="text-sm text-muted-foreground">{sub}</div>
+        <div className="text-xs text-muted-foreground font-medium">{sub}</div>
       </div>
     </Card>
   );
 }
 
-function CheckCircle2(props: any) {
+function DashboardSkeleton() {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
+    <div className="min-h-screen bg-background pb-32">
+      <Navigation />
+      <div className="container mx-auto px-6 py-12 space-y-12">
+        <div className="flex justify-between">
+          <Skeleton className="h-12 w-64 rounded-xl" />
+          <Skeleton className="h-16 w-48 rounded-3xl" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 rounded-3xl" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Skeleton className="h-[400px] lg:col-span-2 rounded-[2rem]" />
+          <Skeleton className="h-[400px] rounded-[2rem]" />
+        </div>
+      </div>
+    </div>
   );
 }

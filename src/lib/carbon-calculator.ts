@@ -1,7 +1,10 @@
 import { AssessmentState, FootprintData } from '@/types';
 
-// Emission factors (approximate kg CO2e per unit)
-const FACTORS = {
+/**
+ * Emission factors (approximate kg CO2e per unit)
+ * Sources derived from IPCC and EPA average datasets for personal consumption.
+ */
+export const FACTORS = {
   TRANSPORT: {
     GAS: 0.19, // per km
     ELECTRIC: 0.05,
@@ -26,7 +29,7 @@ const FACTORS = {
     RECYCLING_OFFSET: -20, // offset if recycling always
     BASE_WASTE: 30, // monthly base
   }
-};
+} as const;
 
 export function calculateTransportEmission(state: AssessmentState): number {
   let dailyEmissions = 0;
@@ -65,6 +68,22 @@ export function calculateWasteEmission(state: AssessmentState): number {
   return Math.max(5, waste);
 }
 
+/**
+ * Calculates the EcoScore (0-100).
+ * 100 is ideal, 0 is very high impact.
+ * Average monthly footprint globally is around 400kg.
+ */
+export function calculateEcoScore(totalKg: number): number {
+  const IDEAL_MONTHLY = 150; // Near net zero per capita target
+  const MAX_THRESHOLD = 800; // High impact threshold
+  
+  if (totalKg <= IDEAL_MONTHLY) return 100;
+  if (totalKg >= MAX_THRESHOLD) return 0;
+  
+  const score = 100 - ((totalKg - IDEAL_MONTHLY) / (MAX_THRESHOLD - IDEAL_MONTHLY)) * 100;
+  return Math.round(Math.min(100, Math.max(0, score)));
+}
+
 export function calculateTotalFootprint(state: AssessmentState): FootprintData {
   const transport = calculateTransportEmission(state);
   const food = calculateFoodEmission(state);
@@ -81,6 +100,7 @@ export function calculateTotalFootprint(state: AssessmentState): FootprintData {
     shopping: Math.round(shopping),
     waste: Math.round(waste),
     total: Math.round(total),
+    ecoScore: calculateEcoScore(total),
     timestamp: Date.now()
   };
 }

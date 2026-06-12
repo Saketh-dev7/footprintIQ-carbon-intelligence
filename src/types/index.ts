@@ -5,6 +5,7 @@ export interface FootprintData {
   shopping: number;
   waste: number;
   total: number;
+  ecoScore: number;
   timestamp: number;
 }
 
@@ -24,6 +25,12 @@ export interface AssessmentState {
   clothingItemsPerYear: number;
   // Waste
   recyclingFrequency: 'never' | 'sometimes' | 'always';
+}
+
+export interface ActionPlanDay {
+  day: number;
+  task: string;
+  impact: 'low' | 'medium' | 'high';
 }
 
 export interface Badge {

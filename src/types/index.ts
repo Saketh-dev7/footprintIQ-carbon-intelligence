@@ -32,6 +32,13 @@ export interface ActionPlanDay {
   impact: 'low' | 'medium' | 'high';
 }
 
+export interface MonthlyGoal {
+  title: string;
+  description: string;
+  targetReductionKg: number;
+  currentProgressPercent: number;
+}
+
 export interface Badge {
   id: string;
   name: string;

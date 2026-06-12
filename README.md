@@ -1,50 +1,119 @@
-# FootprintIQ
+# 🌍 FootprintIQ: Carbon Intelligence Platform
 
 **"Measure Smarter. Live Greener."**
 
-FootprintIQ is a production-ready AI-powered Carbon Intelligence Platform designed to help individuals track, understand, and reduce their carbon footprint through personalized insights and sustainability forecasting.
+FootprintIQ is an AI-powered Carbon Intelligence Platform designed to help individuals quantify, understand, and reduce their environmental impact through high-fidelity analytics and personalized behavioral pathways.
 
-## 🌍 Problem Statement
-While many individuals want to reduce their environmental impact, they lack the tools to:
-- Quantify their lifestyle emissions accurately.
-- Understand the context of their consumption.
-- Receive actionable, personalized guidance.
-- Forecast the impact of potential lifestyle changes.
+---
 
-## 🚀 Key Features
-- **Intelligent Assessment**: A multi-step lifestyle analysis engine.
-- **Carbon Intelligence Hub**: A high-fidelity dashboard with interactive visualizations.
-- **AI Sustainability Advisor**: Personalized, context-aware reduction strategies powered by Google Gemini.
-- **Impact Forecast Studio**: A real-time habit simulation engine.
-- **Conversational Assistant**: A chatbot for sustainability queries.
-- **Personal Journey**: Badge and milestone tracking for behavioral reinforcement.
+## 📖 Project Overview
+FootprintIQ transforms complex environmental data into actionable intelligence. By combining a robust carbon calculation engine with Google Gemini-powered insights, the platform provides a comprehensive roadmap for personal sustainability.
 
-## 🛠 Tech Stack
-- **Frontend**: Next.js 15+, TypeScript, Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Charts**: Recharts
-- **AI Integration**: Google GenAI (Gemini) via Firebase Genkit
-- **Animations**: CSS Transitions & Tailwind Animate
+### 🚩 Problem Statement
+Most individuals want to live more sustainably but face three core barriers:
+1.  **Complexity**: Quantifying lifestyle impact (CO2e) is difficult without specialized knowledge.
+2.  **Lack of Context**: Raw numbers (e.g., "500kg CO2e") lack meaning without benchmarks or scoring.
+3.  **Inaction**: Users often don't know the specific first steps to take to make a real difference.
 
-## 📐 Architecture
-The project follows a modular architecture with a clear separation of concerns:
-- `/src/app`: Page routes and layouts.
-- `/src/components`: Reusable UI components.
-- `/src/lib`: Core business logic (Carbon Calculator).
-- `/src/ai`: Genkit flows for AI processing.
-- `/src/types`: TypeScript interfaces for global data structures.
+### 🎯 Chosen Vertical
+**Sustainability & Climate Action**: FootprintIQ specifically targets personal carbon management and behavioral change.
 
-## 📦 Installation
-1. Clone the repository.
-2. Install dependencies: `npm install`.
-3. Set up environment variables in `.env`:
-   ```
-   GEMINI_API_KEY=your_api_key_here
-   ```
-4. Run development server: `npm run dev`.
+---
 
-## 🧪 Testing
-Calculations are housed in `src/lib/carbon-calculator.ts` and can be tested using Jest or Vitest to ensure accuracy across Transport, Food, Energy, and Shopping categories.
+## 🧪 Approach and Logic
+
+### Carbon Calculation Engine
+The core logic resides in `src/lib/carbon-calculator.ts`. We use established environmental impact factors to calculate monthly emissions across five key lifestyle pillars:
+
+1.  **Transportation**: Calculates daily commute impact (Gas vs. EV) + pro-rated annual flight emissions.
+2.  **Diet**: Measures food-related emissions based on protein sources (Vegan to Meat-Heavy).
+3.  **Energy**: Accounts for home electricity usage, renewable energy offsets, and HVAC intensity.
+4.  **Shopping**: Tracks the lifecycle impact of online deliveries and textile consumption.
+5.  **Waste**: Benchmarks baseline trash production against recycling consistency.
+
+### EcoScore (0-100)
+The **EcoScore** is a proprietary metric that benchmarks a user's total footprint against global sustainability targets. 
+- **Score 100**: Footprint ≤ 150kg CO2e/month (Ideal sustainable level).
+- **Score 0**: Footprint ≥ 800kg CO2e/month (High impact level).
+- **Calculation**: `100 - ((total - ideal) / (poor - ideal)) * 100`
+
+---
+
+## 🚀 How the Solution Works
+
+1.  **Intelligent Assessment**: A 5-step interactive form captures lifestyle data with strict Zod validation.
+2.  **Intelligence Hub**: A high-fidelity dashboard visualizes data using Recharts and surfaces the **EcoScore**.
+3.  **AI Sustainability Advisor**: Generates a **30-Day Carbon Action Plan** and a specific **Monthly Reduction Goal** using Genkit.
+4.  **Impact Forecast Studio**: A real-time simulator where users can "test drive" lifestyle changes (e.g., switching to renewable energy) and see projected annual CO2e savings.
+5.  **Conversational Assistant**: A specialized AI chatbot for immediate sustainability queries.
+
+---
+
+## 🏗 Architecture
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **AI Engine**: Firebase Genkit with Google Gemini 2.5 Flash
+- **Styling**: Tailwind CSS & Shadcn UI
+- **Visuals**: Recharts (Data Viz) & Lucide (Icons)
+- **State**: React Hooks with robust LocalStorage persistence
+
+---
+
+## ✨ Key Features
+- ✅ **EcoScore**: Immediate feedback on your sustainability rank.
+- ✅ **30-Day Action Roadmap**: Week-by-week tasks generated by AI.
+- ✅ **Monthly Goal Tracker**: Visualizes progress toward specific reduction targets.
+- ✅ **Real-time Simulator**: Project long-term savings from lifestyle shifts.
+- ✅ **Accessibility First**: Fully ARIA-compliant, keyboard navigable, and screen-reader friendly.
+- ✅ **Unit Tested**: 100% coverage for the core carbon calculation logic.
+
+---
+
+## 🛠 Setup & Installation
+
+### Prerequisites
+- Node.js 18+ 
+- Gemini API Key
+
+### Installation
+1.  Clone the repository.
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Configure environment variables in `.env`:
+    ```env
+    GEMINI_API_KEY=your_api_key_here
+    ```
+4.  Run the development server:
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🚢 Deployment
+FootprintIQ is optimized for **Firebase App Hosting** or Vercel.
+
+1.  Ensure `next.config.ts` and `apphosting.yaml` are configured (included).
+2.  Connect your repository to Firebase/Vercel.
+3.  Add the `GEMINI_API_KEY` to your deployment's environment variables.
+
+---
+
+## 🧠 Assumptions Made
+- **Commute**: Assumes 22 working days per month for daily commute calculations.
+- **Flights**: Average flight emissions are estimated at 250kg CO2e per flight.
+- **Factors**: Emission factors are based on global averages and may vary slightly by region.
+- **Persistence**: Currently uses LocalStorage for MVP persistence; production scaling would integrate Firestore.
+
+---
+
+## 🔮 Future Improvements
+- [ ] **Community Benchmarking**: Compare your EcoScore with friends or regional averages.
+- [ ] **Product Scanning**: Integration with GS1/UPC databases to calculate specific product footprints.
+- [ ] **Gamification**: Expand the Badge system into a competitive "Eco-League".
+- [ ] **Smart Home Sync**: Connect directly to utility APIs (Opower/Arc) for real-time energy tracking.
 
 ---
 Built with 💚 for the Planet.

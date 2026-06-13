@@ -56,9 +56,15 @@ const conversationalSustainabilityAssistantFlow = ai.defineFlow(
 
     return output;
   } catch (error) {
-    console.error("Assistant Flow Error:", error);
+  return `AI service temporarily unavailable.
 
-    return "I'm currently experiencing high demand. Please try again in a moment.";
+Suggestions:
+• Reduce car usage by 2 trips/week
+• Lower AC usage by 1 hour/day
+• Reduce food waste
+• Switch to LED lighting
+
+Estimated footprint reduction: 10-25%.`;
   }
         }
 );

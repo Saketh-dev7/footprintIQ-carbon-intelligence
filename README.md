@@ -25,6 +25,34 @@ FootprintIQ is a high-fidelity Carbon Intelligence Platform that transforms life
 - Tested with Vitest
 
 ---
+# FootprintIQ
+
+AI-Powered Carbon Intelligence Platform
+
+## Features
+- Carbon Footprint Assessment
+- Sustainability Dashboard
+- Impact Forecast Studio
+- AI Sustainability Advisor
+- Personalized Recommendations
+
+## Tech Stack
+- Next.js
+- TypeScript
+- Firebase Studio
+- Google Gemini
+- Genkit
+- Tailwind CSS
+- Vitest
+
+## Live Demo
+https://co2footprint.netlify.app
+
+## AI Assistant
+
+The Sustainability Assistant uses Google Gemini through Genkit.
+When AI services are temporarily unavailable, FootprintIQ provides intelligent fallback sustainability recommendations to ensure uninterrupted user guidance.
+
 
 ## 📖 Project Overview
 FootprintIQ addresses the complexity of personal carbon management by providing users with a precise EcoScore (0-100), a 30-day personalized roadmap, and real-time impact forecasting.

@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useFootprint } from '@/hooks/use-footprint';
 import { aiSustainabilityAdvisor, AISustainabilityAdvisorOutput } from '@/ai/flows/ai-sustainability-advisor-flow';
-import { Globe, TrendingUp, Sparkles, AlertCircle, Loader2, Calendar, Target, ShieldCheck, Leaf } from 'lucide-react';
+import { Globe, TrendingUp, Sparkles, AlertCircle, Loader2, Calendar, Target, ShieldCheck, Leaf, CheckCircle2, Circle } from 'lucide-react';
+import { ActionPlanDay } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 
 export default function DashboardPage() {
-  const { data, isLoading } = useFootprint();
+  const { data, isLoading, completedTasks, toggleTaskCompletion } = useFootprint();
   const { toast } = useToast();
   const [aiInsights, setAiInsights] = useState<AISustainabilityAdvisorOutput | null>(null);
   const [loadingAI, setLoadingAI] = useState(false);
@@ -240,7 +241,12 @@ export default function DashboardPage() {
                 <TabsContent key={idx} value={`week-${idx + 1}`} className="outline-none" role="tabpanel">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4" role="list">
                     {w.days.map((day) => (
-                      <ActionDayCard key={day.day} day={day} />
+                      <ActionDayCard
+                        key={day.day}
+                        day={day}
+                        completed={completedTasks.includes(day.day)}
+                        onToggle={() => toggleTaskCompletion(day.day)}
+                      />
                     ))}
                   </div>
                 </TabsContent>
@@ -253,9 +259,9 @@ export default function DashboardPage() {
   );
 }
 
-function ActionDayCard({ day }: { day: any }) {
+function ActionDayCard({ day, completed, onToggle }: { day: ActionPlanDay, completed: boolean, onToggle: () => void }) {
   return (
-    <Card className="glass border-white/5 rounded-2xl hover:border-primary/30 transition-all overflow-hidden group" role="listitem">
+    <Card className={`glass border-white/5 rounded-2xl hover:border-primary/30 transition-all overflow-hidden group ${completed ? 'border-accent/40' : ''}`} role="listitem">
       <div className="bg-primary/10 p-3 flex justify-between items-center border-b border-white/5 group-hover:bg-primary/20 transition-colors">
         <span className="font-headline font-bold text-primary text-sm">Day {day.day}</span>
         <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
@@ -265,8 +271,17 @@ function ActionDayCard({ day }: { day: any }) {
           {day.impact} Impact
         </span>
       </div>
-      <CardContent className="p-4 text-xs leading-relaxed min-h-[100px] flex items-center">
-        {day.task}
+      <CardContent className="p-4 text-xs leading-relaxed min-h-[100px] flex flex-col gap-3">
+        <p className="flex-1">{day.task}</p>
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-pressed={completed}
+          className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider self-start transition-colors ${completed ? 'text-accent' : 'text-muted-foreground hover:text-primary'}`}
+        >
+          {completed ? <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> : <Circle className="w-4 h-4" aria-hidden="true" />}
+          {completed ? 'Implemented' : 'Mark Implemented'}
+        </button>
       </CardContent>
     </Card>
   );

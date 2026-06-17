@@ -1,24 +1,30 @@
 "use client"
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useFootprint } from '@/hooks/use-footprint';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Leaf, ArrowDownCircle, RefreshCw, Zap, TrendingDown, LayoutPanelLeft } from 'lucide-react';
+import { Leaf, ArrowDownCircle, RefreshCw, Zap, TrendingDown, LayoutPanelLeft, LucideIcon } from 'lucide-react';
 import { Label as LabelUI } from '@/components/ui/label';
 import { EmptyState } from '@/components/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ForecastPage() {
-  const { data: baseData, isLoading } = useFootprint();
+  const { data: baseData, isLoading, markForecastVisited } = useFootprint();
   const [savings, setSavings] = useState({
     transport: 0,
     food: 0,
     energy: 0,
   });
+
+  useEffect(() => {
+    if (baseData) {
+      markForecastVisited();
+    }
+  }, [baseData, markForecastVisited]);
 
   const projection = useMemo(() => {
     if (!baseData) return null;
@@ -161,7 +167,7 @@ export default function ForecastPage() {
   );
 }
 
-function SimulationControl({ icon: Icon, label, value, onChange, max, desc, id }: { icon: any, label: string, value: number, onChange: (v: number) => void, max: number, desc: string, id: string }) {
+function SimulationControl({ icon: Icon, label, value, onChange, max, desc, id }: { icon: LucideIcon, label: string, value: number, onChange: (v: number) => void, max: number, desc: string, id: string }) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">

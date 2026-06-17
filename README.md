@@ -1,5 +1,4 @@
 # 🌍 FootprintIQ: Carbon Intelligence Platform
-# FootprintIQ
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
@@ -9,59 +8,18 @@
 ![Status](https://img.shields.io/badge/Status-Active-success)
 ![Hackathon](https://img.shields.io/badge/Hack2Skill-PromptWars-orange)
 
-AI-Powered Carbon Intelligence Platform
-**"Measure Smarter. Live Greener."**
+**AI-Powered Carbon Intelligence Platform — "Measure Smarter. Live Greener."**
 
 FootprintIQ is a high-fidelity Carbon Intelligence Platform that transforms lifestyle data into actionable environmental intelligence using Google Gemini-powered insights and a robust carbon calculation engine.
-## Project Highlights
-
-- AI-Powered Sustainability Advisor
-- Carbon Footprint Analysis Engine
-- Impact Forecast Studio
-- Personalized Carbon Reduction Plans
-- Progress Tracking & EcoScore
-- Google Gemini Integration
-- Accessibility Focused
-- Tested with Vitest
-
----
-# FootprintIQ
-
-AI-Powered Carbon Intelligence Platform
-
-## Features
-- Carbon Footprint Assessment
-- Sustainability Dashboard
-- Impact Forecast Studio
-- AI Sustainability Advisor
-- Personalized Recommendations
-
-## Tech Stack
-- Next.js
-- TypeScript
-- Firebase Studio
-- Google Gemini
-- Genkit
-- Tailwind CSS
-- Vitest
-
-## Live Demo
-https://co2footprint.netlify.app
-
-## AI Assistant
-
-The Sustainability Assistant uses Google Gemini through Genkit.
-When AI services are temporarily unavailable, FootprintIQ provides intelligent fallback sustainability recommendations to ensure uninterrupted user guidance.
-
 
 ## 📖 Project Overview
 FootprintIQ addresses the complexity of personal carbon management by providing users with a precise EcoScore (0-100), a 30-day personalized roadmap, and real-time impact forecasting.
 
 ### 🚩 Problem Statement
 Individuals want to reduce their footprint but are often paralyzed by:
-1.  **Complexity**: Difficulty in quantifying impact (CO2e) across diverse categories.
-2.  **Lack of Context**: Raw numbers lack benchmarks or scoring.
-3.  **Inaction**: Users don't know the specific first steps to take.
+1. **Complexity**: Difficulty in quantifying impact (CO2e) across diverse categories.
+2. **Lack of Context**: Raw numbers lack benchmarks or scoring.
+3. **Inaction**: Users don't know the specific first steps to take.
 
 ### 🎯 Chosen Vertical
 **Sustainability & Climate Action**: Empowering individuals to lead the transition to net zero.
@@ -80,10 +38,10 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
 ## 🚀 Key Features
 - ✅ **Intelligence Hub**: Visual breakdown of your carbon profile using high-fidelity Recharts.
 - ✅ **EcoScore**: Real-time feedback on your sustainability rank (0-100).
-- ✅ **30-Day Carbon Roadmap**: AI-generated, week-by-week behavioral pathways using Google Gemini.
-- ✅ **Monthly Goal Tracker**: Interactive progress monitoring for specific reduction targets.
+- ✅ **30-Day Carbon Roadmap**: AI-generated, week-by-week behavioral pathways using Google Gemini, with per-task completion tracking.
 - ✅ **Impact Forecast Studio**: Lifestyle change simulator with annual projections.
-- ✅ **Sustainability Assistant**: Conversational AI for personalized green advice.
+- ✅ **Sustainability Assistant**: Conversational AI for personalized green advice, with graceful offline fallback guidance if Gemini is unavailable.
+- ✅ **Progress & Badges**: Streaks, EcoPoints, and milestone badges derived from your real assessment history rather than static placeholders.
 - ✅ **A11y Compliant**: Optimized for screen readers and keyboard navigation (WCAG standards).
 
 ---
@@ -93,15 +51,15 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
 - **AI**: Firebase Genkit & Google Gemini 2.5 Flash
 - **Styling**: Tailwind CSS & Shadcn UI
 - **State**: React Hooks with persistent LocalStorage via `useFootprint`.
-- **Testing**: Vitest for core calculation logic and edge cases.
+- **Testing**: Vitest for core calculation logic, schema validation, and AI fallback behavior.
 
 ---
 
 ## 🛠 Setup & Installation
 1. **Clone the Repo**:
    ```bash
-   git clone https://github.com/SAKETH-007-dev/footprintIQ-carbon-intelligence.git
-   cd footprint-iq
+   git clone https://github.com/Saketh-dev7/footprintIQ-carbon-intelligence.git
+   cd footprintIQ-carbon-intelligence
    ```
 2. **Install Dependencies**:
    ```bash
@@ -114,8 +72,13 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
    ```bash
    npm run dev
    ```
+5. **Run Tests**:
+   ```bash
+   npm run test
+   ```
 
----
+## 🤖 AI Assistant
+The Sustainability Assistant uses Google Gemini through Genkit. When the AI service is temporarily unavailable, FootprintIQ falls back to a fixed set of intelligent sustainability recommendations so guidance is never interrupted.
 
 ## 🔐 Security
 - **No Hardcoded Secrets**: All API keys are managed via environment variables.
@@ -128,6 +91,9 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
 - High color contrast and screen reader friendly live regions.
 - "Skip to Content" links for efficient keyboard navigation.
 
+## 🌐 Live Demo
+https://co2footprint.netlify.app
+
 ## 🔮 Future Improvements
 - **Global Leaderboards**: Social comparison for community-driven action.
 - **Smart Meter Integration**: Automated electricity data importing.
@@ -136,4 +102,4 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
 ---
 
 ## 📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.

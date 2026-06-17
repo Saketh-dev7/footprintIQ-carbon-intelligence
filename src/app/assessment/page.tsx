@@ -14,6 +14,7 @@ import { AssessmentState, AssessmentSchema } from '@/types';
 import { calculateTotalFootprint } from '@/lib/carbon-calculator';
 import { ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useFootprint } from '@/hooks/use-footprint';
 
 const steps = [
   { id: 'transport', title: 'Transportation', description: 'Your daily and long-distance travel.' },
@@ -26,6 +27,7 @@ const steps = [
 export default function AssessmentPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { saveData } = useFootprint();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<AssessmentState>({
     vehicleType: 'gas',
@@ -40,12 +42,33 @@ export default function AssessmentPage() {
     recyclingFrequency: 'sometimes',
   });
 
-  const validateCurrentStep = () => {
-    return true;
+  const validateCurrentStep = (): boolean => {
+    const stepId = steps[currentStep].id;
+    switch (stepId) {
+      case 'transport':
+        return AssessmentSchema.pick({ vehicleType: true, dailyCommute: true, flightsPerYear: true }).safeParse(formData).success;
+      case 'food':
+        return AssessmentSchema.pick({ dietType: true }).safeParse(formData).success;
+      case 'energy':
+        return AssessmentSchema.pick({ monthlyElectricity: true, hasAC: true, renewableEnergy: true }).safeParse(formData).success;
+      case 'shopping':
+        return AssessmentSchema.pick({ onlinePurchasesPerMonth: true, clothingItemsPerYear: true }).safeParse(formData).success;
+      case 'waste':
+        return AssessmentSchema.pick({ recyclingFrequency: true }).safeParse(formData).success;
+      default:
+        return true;
+    }
   };
 
   const handleNext = () => {
-    if (!validateCurrentStep()) return;
+    if (!validateCurrentStep()) {
+      toast({
+        variant: "destructive",
+        title: "Check Your Inputs",
+        description: "One or more values for this step are out of the expected range."
+      });
+      return;
+    }
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -64,8 +87,7 @@ export default function AssessmentPage() {
       return;
     }
     const footprint = calculateTotalFootprint(formData);
-    localStorage.setItem('footprint_iq_data', JSON.stringify(footprint));
-    localStorage.setItem('footprint_iq_assessment', JSON.stringify(formData));
+    saveData(footprint, formData);
     router.push('/dashboard');
   };
 
@@ -105,7 +127,7 @@ export default function AssessmentPage() {
                     <Label className="text-lg" id="vehicle-type-label">Vehicle Type</Label>
                     <RadioGroup 
                       value={formData.vehicleType} 
-                      onValueChange={(v: any) => setFormData({ ...formData, vehicleType: v })}
+                      onValueChange={(v: string) => setFormData({ ...formData, vehicleType: v as AssessmentState['vehicleType'] })}
                       className="grid grid-cols-2 gap-4"
                       aria-labelledby="vehicle-type-label"
                     >
@@ -149,7 +171,7 @@ export default function AssessmentPage() {
                   <Label className="text-lg" id="diet-label">Dietary Habits</Label>
                   <RadioGroup 
                     value={formData.dietType} 
-                    onValueChange={(v: any) => setFormData({ ...formData, dietType: v })}
+                    onValueChange={(v: string) => setFormData({ ...formData, dietType: v as AssessmentState['dietType'] })}
                     className="grid grid-cols-1 gap-4"
                     aria-labelledby="diet-label"
                   >
@@ -247,7 +269,7 @@ export default function AssessmentPage() {
                   <Label className="text-lg" id="recycling-label">Recycling Consistency</Label>
                   <RadioGroup 
                     value={formData.recyclingFrequency} 
-                    onValueChange={(v: any) => setFormData({ ...formData, recyclingFrequency: v })}
+                    onValueChange={(v: string) => setFormData({ ...formData, recyclingFrequency: v as AssessmentState['recyclingFrequency'] })}
                     className="grid grid-cols-1 gap-4"
                     aria-labelledby="recycling-label"
                   >

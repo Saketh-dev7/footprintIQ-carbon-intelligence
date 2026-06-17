@@ -1,24 +1,22 @@
 "use client"
 
-import { useState } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useFootprint } from '@/hooks/use-footprint';
-import { Badge as BadgeType } from '@/types';
-import { Trophy, ShieldCheck, Flame, Leaf, Globe, Star, ChevronRight, Zap } from 'lucide-react';
+import { Trophy, ShieldCheck, Flame, Leaf, Globe, Star, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-
-const BADGES: BadgeType[] = [
-  { id: '1', name: 'Green Beginner', description: 'Completed first assessment', icon: 'Leaf', unlocked: true },
-  { id: '2', name: 'Eco Explorer', description: 'Used Forecast Studio to plan reductions', icon: 'Globe', unlocked: true },
-  { id: '3', name: 'Carbon Warrior', description: 'Monthly footprint under 200kg', icon: 'ShieldCheck', unlocked: false },
-  { id: '4', name: 'Planet Protector', description: 'Implemented 5+ AI suggestions', icon: 'Trophy', unlocked: false },
-];
+import {
+  calculateStreakDays,
+  calculateEcoPoints,
+  calculateWarriorProgress,
+  calculateProtectorProgress,
+  computeBadges,
+} from '@/lib/progress';
 
 export default function ProgressPage() {
-  const { data, isLoading } = useFootprint();
+  const { data, isLoading, history, visitedForecast, completedTasks } = useFootprint();
 
   if (isLoading) return null;
 
@@ -37,6 +35,46 @@ export default function ProgressPage() {
       </div>
     );
   }
+
+  const effectiveHistory = history.length > 0
+    ? history
+    : [{ timestamp: data.timestamp, total: data.total, ecoScore: data.ecoScore }];
+
+  const streakDays = calculateStreakDays(effectiveHistory);
+  const ecoPoints = calculateEcoPoints(data.ecoScore);
+  const ecoLevel = Math.floor(ecoPoints / 250) + 1;
+  const warriorProgress = calculateWarriorProgress(data.total);
+  const protectorProgress = calculateProtectorProgress(completedTasks.length);
+
+  const badges = computeBadges({
+    hasAssessment: true,
+    visitedForecast,
+    totalKg: data.total,
+    completedTaskCount: completedTasks.length,
+  });
+  const unlockedCount = badges.filter(b => b.unlocked).length;
+
+  const carbonWarriorBadge = badges.find(b => b.id === '3');
+  const planetProtectorBadge = badges.find(b => b.id === '4');
+  const lockedProgress = [
+    carbonWarriorBadge && !carbonWarriorBadge.unlocked ? warriorProgress : null,
+    planetProtectorBadge && !planetProtectorBadge.unlocked ? protectorProgress : null,
+  ].filter((p): p is number => p !== null);
+  const milestoneDescription = lockedProgress.length > 0
+    ? `You are ${100 - Math.max(...lockedProgress)}% away from your next milestone`
+    : "You've unlocked every milestone — incredible work!";
+
+  // Real footprint trend, built from each completed assessment rather than a static placeholder.
+  const timelineEntries = effectiveHistory.slice(-12);
+  const maxTrackedTotal = Math.max(...timelineEntries.map(e => e.total), 1);
+  const hasTrend = timelineEntries.length > 1;
+  const trendDirection = hasTrend
+    ? timelineEntries[timelineEntries.length - 1].total < timelineEntries[0].total
+      ? 'a downward'
+      : timelineEntries[timelineEntries.length - 1].total > timelineEntries[0].total
+        ? 'an upward'
+        : 'a flat'
+    : null;
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -57,10 +95,12 @@ export default function ProgressPage() {
                   </div>
                   <div>
                     <h3 className="font-bold">Active Streak</h3>
-                    <p className="text-sm text-muted-foreground">3 Days Tracking</p>
+                    <p className="text-sm text-muted-foreground">{streakDays} {streakDays === 1 ? 'Day' : 'Days'} Tracking</p>
                   </div>
                 </div>
-                <div className="text-5xl font-headline font-black text-primary" aria-label="3 days streak">03</div>
+                <div className="text-5xl font-headline font-black text-primary" aria-label={`${streakDays} day streak`}>
+                  {String(streakDays).padStart(2, '0')}
+                </div>
               </Card>
               <Card className="glass border-white/5 rounded-3xl p-8 bg-gradient-to-br from-accent/10 to-transparent shadow-xl">
                 <div className="flex items-center gap-4 mb-6">
@@ -69,10 +109,10 @@ export default function ProgressPage() {
                   </div>
                   <div>
                     <h3 className="font-bold">Eco Points</h3>
-                    <p className="text-sm text-muted-foreground">Level 2 Path</p>
+                    <p className="text-sm text-muted-foreground">Level {ecoLevel} Path</p>
                   </div>
                 </div>
-                <div className="text-5xl font-headline font-black text-accent" aria-label="850 eco points">850</div>
+                <div className="text-5xl font-headline font-black text-accent" aria-label={`${ecoPoints} eco points`}>{ecoPoints}</div>
               </Card>
             </section>
 
@@ -80,22 +120,22 @@ export default function ProgressPage() {
               <Card className="glass border-white/5 rounded-[2rem] shadow-xl">
                 <CardHeader>
                   <CardTitle id="achievement-progress-title" className="font-headline">Achievement Progress</CardTitle>
-                  <CardDescription>You are 75% away from your next milestone</CardDescription>
+                  <CardDescription>{milestoneDescription}</CardDescription>
                 </CardHeader>
                 <CardContent className="p-8 pt-0 space-y-8">
                   <div className="space-y-4">
                     <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
                       <span>Carbon Warrior Progress</span>
-                      <span aria-live="polite">20%</span>
+                      <span aria-live="polite">{warriorProgress}%</span>
                     </div>
-                    <Progress value={20} className="h-3 bg-white/5" aria-label="Carbon Warrior milestone progress" />
+                    <Progress value={warriorProgress} className="h-3 bg-white/5" aria-label="Carbon Warrior milestone progress" />
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between text-sm font-bold uppercase tracking-widest text-muted-foreground">
                       <span>Planet Protector Progress</span>
-                      <span aria-live="polite">45%</span>
+                      <span aria-live="polite">{protectorProgress}%</span>
                     </div>
-                    <Progress value={45} className="h-3 bg-white/5" aria-label="Planet Protector milestone progress" />
+                    <Progress value={protectorProgress} className="h-3 bg-white/5" aria-label="Planet Protector milestone progress" />
                   </div>
                 </CardContent>
               </Card>
@@ -104,17 +144,35 @@ export default function ProgressPage() {
             <section className="glass rounded-[2rem] border-white/5 p-12 overflow-hidden relative shadow-2xl" aria-labelledby="history-title">
               <div className="relative z-10">
                 <h3 id="history-title" className="text-3xl font-headline font-bold mb-4">Carbon History Timeline</h3>
-                <p className="text-muted-foreground mb-8">Visualization of your footprint reduction over the last year.</p>
-                <div className="h-40 flex items-end gap-3 md:gap-6" role="img" aria-label="Bar chart showing a downward trend in carbon emissions over the last 12 months.">
-                  {[45, 42, 38, 40, 35, 32, 30, 28, 25, 22, 24, 20].map((h, i) => (
-                    <div key={i} className="flex-1 bg-primary/20 rounded-t-lg relative group transition-all" style={{ height: `${h * 4}px` }}>
+                <p className="text-muted-foreground mb-8">
+                  {hasTrend
+                    ? 'Your footprint across every completed assessment.'
+                    : 'Complete another assessment over time to start seeing your trend here.'}
+                </p>
+                <div
+                  className="h-40 flex items-end gap-3 md:gap-6"
+                  role="img"
+                  aria-label={
+                    hasTrend
+                      ? `Bar chart showing ${trendDirection} trend in carbon emissions across ${timelineEntries.length} tracked assessments.`
+                      : `Bar chart showing a single tracked assessment of ${timelineEntries[0]?.total ?? data.total}kg CO2e.`
+                  }
+                >
+                  {timelineEntries.map((entry) => (
+                    <div
+                      key={entry.timestamp}
+                      className="flex-1 bg-primary/20 rounded-t-lg relative group transition-all"
+                      style={{ height: `${Math.max(4, (entry.total / maxTrackedTotal) * 100)}%` }}
+                    >
                       <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-100 rounded-t-lg transition-opacity" />
                     </div>
                   ))}
                 </div>
                 <div className="flex justify-between mt-4 text-[10px] text-muted-foreground uppercase font-bold tracking-widest px-1">
-                  <span>Jan</span>
-                  <span>Dec</span>
+                  <span>{new Date(timelineEntries[0]?.timestamp ?? data.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  {timelineEntries.length > 1 && (
+                    <span>{new Date(timelineEntries[timelineEntries.length - 1].timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  )}
                 </div>
               </div>
             </section>
@@ -123,7 +181,7 @@ export default function ProgressPage() {
           <aside className="space-y-6" aria-labelledby="badges-title">
             <h3 id="badges-title" className="text-xl font-headline font-bold px-4">Earned Badges</h3>
             <div className="space-y-4" role="list">
-              {BADGES.map((badge) => (
+              {badges.map((badge) => (
                 <Card 
                   key={badge.id} 
                   role="listitem"
@@ -151,9 +209,12 @@ export default function ProgressPage() {
                 </Card>
               ))}
             </div>
-            <Button variant="outline" className="w-full h-14 rounded-2xl glass border-white/10 hover:bg-white/5 shadow-md">
-              View All 24 Achievements <ChevronRight className="ml-2 w-4 h-4" aria-hidden="true" />
-            </Button>
+            <div
+              className="w-full h-14 rounded-2xl glass border border-white/10 shadow-md flex items-center justify-center font-medium text-sm text-muted-foreground"
+              aria-label={`${unlockedCount} of ${badges.length} achievements unlocked`}
+            >
+              {unlockedCount} of {badges.length} Achievements Unlocked
+            </div>
           </aside>
         </div>
       </main>

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Leaf, Globe, Zap, BarChart3, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Leaf, Globe, Zap, BarChart3, ArrowRight, ShieldCheck, CheckCircle2, LucideIcon } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -106,7 +106,7 @@ export default function LandingPage() {
   );
 }
 
-function FeatureCard({ icon: Icon, title, description }: { icon: any, title: string, description: string }) {
+function FeatureCard({ icon: Icon, title, description }: { icon: LucideIcon, title: string, description: string }) {
   return (
     <div className="group p-8 rounded-3xl border border-white/5 bg-card hover:border-primary/50 transition-all duration-300">
       <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">

@@ -73,9 +73,14 @@ export function calculateWasteEmission(state: AssessmentState): number {
   return Math.max(5, waste);
 }
 
+// Benchmark anchors for the 0-100 EcoScore scale, shared with anything that
+// needs to express a footprint as a percentage along the same scale.
+export const ECO_SCORE_IDEAL_KG = 150;
+export const ECO_SCORE_POOR_KG = 800;
+
 export function calculateEcoScore(totalKg: number): number {
-  const IDEAL = 150; 
-  const POOR = 800; 
+  const IDEAL = ECO_SCORE_IDEAL_KG;
+  const POOR = ECO_SCORE_POOR_KG;
   if (totalKg <= IDEAL) return 100;
   if (totalKg >= POOR) return 0;
   return Math.round(100 - ((totalKg - IDEAL) / (POOR - IDEAL)) * 100);

@@ -1,4 +1,4 @@
-name: Deploy to Firebase App Hosting
+name: CI - Build & Test
 on:
   push:
     branches: [ main ]

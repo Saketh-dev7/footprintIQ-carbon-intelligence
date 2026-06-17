@@ -46,3 +46,11 @@ export interface Badge {
   icon: 'Leaf' | 'Globe' | 'ShieldCheck' | 'Trophy';
   unlocked: boolean;
 }
+
+/** A single recorded snapshot of a completed assessment, used to derive real
+ * progress metrics (streaks, trend charts) instead of hardcoded placeholders. */
+export interface HistoryEntry {
+  timestamp: number;
+  total: number;
+  ecoScore: number;
+}

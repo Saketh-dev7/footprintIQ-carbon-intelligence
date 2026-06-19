@@ -56,6 +56,7 @@ const conversationalSustainabilityAssistantFlow = ai.defineFlow(
 
     return output;
   } catch (error) {
+  console.error('[conversationalSustainabilityAssistantFlow] Gemini call failed:', error);
   return `AI service temporarily unavailable.
 
 Suggestions:

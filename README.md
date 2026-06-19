@@ -67,7 +67,7 @@ The platform uses validated emission factors (kg CO2e) derived from global stand
    ```
 3. **Configure Environment**:
    - Rename `.env.example` to `.env`.
-   - Add your `GOOGLE_GENAI_API_KEY` from [Google AI Studio](https://aistudio.google.com/app/apikey).
+   - Add your `GEMINI_API_KEY` from [Google AI Studio](https://aistudio.google.com/app/apikey).
 4. **Run Development**:
    ```bash
    npm run dev

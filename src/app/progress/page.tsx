@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from 'react';
 import { Navigation } from '@/components/Navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -18,9 +19,70 @@ import {
 export default function ProgressPage() {
   const { data, isLoading, history, visitedForecast, completedTasks } = useFootprint();
 
+  // All derived values recomputed from scratch on every render previously;
+  // memoized here since none of these depend on anything but the four inputs below.
+  const metrics = useMemo(() => {
+    if (!data) return null;
+
+    const effectiveHistory = history.length > 0
+      ? history
+      : [{ timestamp: data.timestamp, total: data.total, ecoScore: data.ecoScore }];
+
+    const streakDays = calculateStreakDays(effectiveHistory);
+    const ecoPoints = calculateEcoPoints(data.ecoScore);
+    const ecoLevel = Math.floor(ecoPoints / 250) + 1;
+    const warriorProgress = calculateWarriorProgress(data.total);
+    const protectorProgress = calculateProtectorProgress(completedTasks.length);
+
+    const badges = computeBadges({
+      hasAssessment: true,
+      visitedForecast,
+      totalKg: data.total,
+      completedTaskCount: completedTasks.length,
+    });
+    const unlockedCount = badges.filter(b => b.unlocked).length;
+
+    const carbonWarriorBadge = badges.find(b => b.id === '3');
+    const planetProtectorBadge = badges.find(b => b.id === '4');
+    const lockedProgress = [
+      carbonWarriorBadge && !carbonWarriorBadge.unlocked ? warriorProgress : null,
+      planetProtectorBadge && !planetProtectorBadge.unlocked ? protectorProgress : null,
+    ].filter((p): p is number => p !== null);
+    const milestoneDescription = lockedProgress.length > 0
+      ? `You are ${100 - Math.max(...lockedProgress)}% away from your next milestone`
+      : "You've unlocked every milestone — incredible work!";
+
+    // Real footprint trend, built from each completed assessment rather than a static placeholder.
+    const timelineEntries = effectiveHistory.slice(-12);
+    const maxTrackedTotal = Math.max(...timelineEntries.map(e => e.total), 1);
+    const hasTrend = timelineEntries.length > 1;
+    const trendDirection = hasTrend
+      ? timelineEntries[timelineEntries.length - 1].total < timelineEntries[0].total
+        ? 'a downward'
+        : timelineEntries[timelineEntries.length - 1].total > timelineEntries[0].total
+          ? 'an upward'
+          : 'a flat'
+      : null;
+
+    return {
+      streakDays,
+      ecoPoints,
+      ecoLevel,
+      warriorProgress,
+      protectorProgress,
+      badges,
+      unlockedCount,
+      milestoneDescription,
+      timelineEntries,
+      maxTrackedTotal,
+      hasTrend,
+      trendDirection,
+    };
+  }, [data, history, visitedForecast, completedTasks]);
+
   if (isLoading) return null;
 
-  if (!data) {
+  if (!data || !metrics) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 text-center bg-background">
         <Navigation />
@@ -36,45 +98,20 @@ export default function ProgressPage() {
     );
   }
 
-  const effectiveHistory = history.length > 0
-    ? history
-    : [{ timestamp: data.timestamp, total: data.total, ecoScore: data.ecoScore }];
-
-  const streakDays = calculateStreakDays(effectiveHistory);
-  const ecoPoints = calculateEcoPoints(data.ecoScore);
-  const ecoLevel = Math.floor(ecoPoints / 250) + 1;
-  const warriorProgress = calculateWarriorProgress(data.total);
-  const protectorProgress = calculateProtectorProgress(completedTasks.length);
-
-  const badges = computeBadges({
-    hasAssessment: true,
-    visitedForecast,
-    totalKg: data.total,
-    completedTaskCount: completedTasks.length,
-  });
-  const unlockedCount = badges.filter(b => b.unlocked).length;
-
-  const carbonWarriorBadge = badges.find(b => b.id === '3');
-  const planetProtectorBadge = badges.find(b => b.id === '4');
-  const lockedProgress = [
-    carbonWarriorBadge && !carbonWarriorBadge.unlocked ? warriorProgress : null,
-    planetProtectorBadge && !planetProtectorBadge.unlocked ? protectorProgress : null,
-  ].filter((p): p is number => p !== null);
-  const milestoneDescription = lockedProgress.length > 0
-    ? `You are ${100 - Math.max(...lockedProgress)}% away from your next milestone`
-    : "You've unlocked every milestone — incredible work!";
-
-  // Real footprint trend, built from each completed assessment rather than a static placeholder.
-  const timelineEntries = effectiveHistory.slice(-12);
-  const maxTrackedTotal = Math.max(...timelineEntries.map(e => e.total), 1);
-  const hasTrend = timelineEntries.length > 1;
-  const trendDirection = hasTrend
-    ? timelineEntries[timelineEntries.length - 1].total < timelineEntries[0].total
-      ? 'a downward'
-      : timelineEntries[timelineEntries.length - 1].total > timelineEntries[0].total
-        ? 'an upward'
-        : 'a flat'
-    : null;
+  const {
+    streakDays,
+    ecoPoints,
+    ecoLevel,
+    warriorProgress,
+    protectorProgress,
+    badges,
+    unlockedCount,
+    milestoneDescription,
+    timelineEntries,
+    maxTrackedTotal,
+    hasTrend,
+    trendDirection,
+  } = metrics;
 
   return (
     <div className="min-h-screen bg-background pb-32">

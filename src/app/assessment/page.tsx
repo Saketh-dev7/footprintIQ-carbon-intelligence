@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +25,16 @@ const steps = [
   { id: 'waste', title: 'Waste', description: 'Recycling and trash management.' },
 ];
 
+// Hoisted to module scope so each schema is built once, not re-derived via
+// AssessmentSchema.pick(...) on every validation call.
+const stepSchemas: Record<string, z.ZodTypeAny> = {
+  transport: AssessmentSchema.pick({ vehicleType: true, dailyCommute: true, flightsPerYear: true }),
+  food: AssessmentSchema.pick({ dietType: true }),
+  energy: AssessmentSchema.pick({ monthlyElectricity: true, hasAC: true, renewableEnergy: true }),
+  shopping: AssessmentSchema.pick({ onlinePurchasesPerMonth: true, clothingItemsPerYear: true }),
+  waste: AssessmentSchema.pick({ recyclingFrequency: true }),
+};
+
 export default function AssessmentPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -44,20 +55,8 @@ export default function AssessmentPage() {
 
   const validateCurrentStep = (): boolean => {
     const stepId = steps[currentStep].id;
-    switch (stepId) {
-      case 'transport':
-        return AssessmentSchema.pick({ vehicleType: true, dailyCommute: true, flightsPerYear: true }).safeParse(formData).success;
-      case 'food':
-        return AssessmentSchema.pick({ dietType: true }).safeParse(formData).success;
-      case 'energy':
-        return AssessmentSchema.pick({ monthlyElectricity: true, hasAC: true, renewableEnergy: true }).safeParse(formData).success;
-      case 'shopping':
-        return AssessmentSchema.pick({ onlinePurchasesPerMonth: true, clothingItemsPerYear: true }).safeParse(formData).success;
-      case 'waste':
-        return AssessmentSchema.pick({ recyclingFrequency: true }).safeParse(formData).success;
-      default:
-        return true;
-    }
+    const schema = stepSchemas[stepId];
+    return schema ? schema.safeParse(formData).success : true;
   };
 
   const handleNext = () => {

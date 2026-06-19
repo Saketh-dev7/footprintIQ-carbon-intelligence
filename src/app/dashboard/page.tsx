@@ -36,6 +36,7 @@ export default function DashboardPage() {
       });
       setAiInsights(result);
     } catch (error) {
+      console.error('[fetchAIInsights] AI advisor call failed:', error);
       toast({
         variant: "destructive",
         title: "AI Analysis Offline",
@@ -73,6 +74,9 @@ export default function DashboardPage() {
       { name: 'Week 4', days: plan.slice(21, 30) },
     ];
   }, [aiInsights]);
+
+  // O(1) membership checks per rendered day-card instead of repeated O(n) array.includes.
+  const completedTaskSet = useMemo(() => new Set(completedTasks), [completedTasks]);
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -244,7 +248,7 @@ export default function DashboardPage() {
                       <ActionDayCard
                         key={day.day}
                         day={day}
-                        completed={completedTasks.includes(day.day)}
+                        completed={completedTaskSet.has(day.day)}
                         onToggle={() => toggleTaskCompletion(day.day)}
                       />
                     ))}
